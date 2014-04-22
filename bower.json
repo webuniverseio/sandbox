@@ -1,0 +1,14 @@
+{
+  "name": "SJAA",
+  "version": "0.0.1",
+  "authors": [
+    "Sergey <serge.zarouski@gmail.com>"
+  ],
+  "description": "Scalable javascript applications architecture",
+  "license": "MIT",
+  "homepage": "http://webuniverse.ca",
+  "private": false,
+  "dependencies": {
+    "lodash": "^2.4.1"
+  }
+}

@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="requirejs" type="javaScript">
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$USER_HOME$/.WebStorm8/system/extLibs/__cdnjs.cloudflare.com_ajax_libs_require.js_2.1.11_require.js" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$USER_HOME$/.WebStorm8/system/extLibs/__cdnjs.cloudflare.com_ajax_libs_require.js_2.1.11_require.js" />
+    </CLASSES>
+    <DOCUMENTATION>
+      <root url="http://requirejs.org/docs/api.html" />
+    </DOCUMENTATION>
+    <SOURCES />
+  </library>
+</component>
