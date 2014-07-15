@@ -1,0 +1,25 @@
+{
+  "name": "Sandbox",
+  "version": "0.0.0",
+  "description": "Sandbox with hierarhial support of event management",
+  "main": "dist/sandbox.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "karma start karma.conf.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Serge-Z/sandbox.git"
+  },
+  "author": "Sergey Zarouski",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Serge-Z/sandbox/issues"
+  },
+  "homepage": "https://github.com/Serge-Z/sandbox",
+  "devDependencies": {
+    "http-server": "^0.6.1"
+  }
+}

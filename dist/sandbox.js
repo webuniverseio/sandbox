@@ -63,9 +63,9 @@
 
 //TODO: make sure that deny cleans cache, overall check how cache management works (including callbacks storage)
 
-//TODO: see where it is possible to remove closures from inner methods
 // Sandbox module provides access to specific settings which are set upon sandbox initialization.
 // It also provides convenient way to publish/subscribe data between modules, with events data caching - something so important when you work with AMD.
+/*
 (function (root, factory) {
 	'use strict';
     if (typeof define === 'function' && define.amd) {
@@ -94,24 +94,18 @@
 	    //in order to figure out if we need to send them messages
 	    registeredNames = [];
 
-	/**
-	 * Sandbox error constructor
-	 * @class SandboxError
-	 * @param {String} message
-	 * @extends Error
-	 */
+	*/
+/*
+
 	function SandboxError(message) {
 		this.message = message;
 	}
 	SandboxError.prototype = new Error();
 	SandboxError.prototype.constructor = SandboxError;
 
-	/**
-	 * Sandbox constructor, takes properties to extend (not deep) an instance
-	 * @class Sandbox
-	 * @param {{moduleName: String}|String} props
-	 * @property {String} moduleName
-	 */
+	*/
+/*
+
 	function Sandbox(props) {
 		var propsIsString = typeof props === 'string';
 		if (!(_.isPlainObject(props) && ('moduleName' in props) || propsIsString)) {
@@ -281,12 +275,9 @@
 		}
 	};
 
-	/**
-	 * SandboxManager provides permission management between sandboxes
-	 * @class SandboxManager
-	 * @param {{moduleName: String}|String} props
-	 * @extends Sandbox
-	 */
+	*/
+/*
+
 	function SandboxManager(props) {
 		Sandbox.call(this, props);
 	}
@@ -407,9 +398,254 @@
 	}
 
 	_.extend(exports,
-	/** @class SandboxExports */
+	*//*
+
 	{
 		Base: Sandbox,
 		Manager: SandboxManager
 	});
-}));
+}));*/
+
+(function (root, factory) {
+    'use strict';
+    if (typeof define === 'function' && define.amd) {
+        define(['exports', '_'], factory);
+    } else if (typeof exports === 'object') {
+        factory(exports, require('_'));
+    } else {
+        factory((root.sandboxExports = {}), root._);
+    }
+}(
+    this,
+    /**
+     * @param exports
+     * @param {_.LoDashStatic} _
+     */
+    function initSandBox(exports, _) {
+        'use strict';
+
+        /* {
+        *      name: 'Granny',
+        *      _settings: {cache: true},
+        *      _cache: [],
+        *      _permissions: [],
+        *      _parent: null,
+        *      _kids: [],
+        *      _listeners: {}
+        * }
+        */
+        var Sandbox = (function () {
+            var privateReference = [],
+                privateData = [];
+
+            function SandboxError(message) {
+                this.message = message;
+            }
+            SandboxError.prototype = new Error();
+            SandboxError.prototype.constructor = SandboxError;
+
+            /**
+             * @param name
+             * @param data
+             * @param settings
+             * @constructor Sandbox
+             */
+            function Sandbox(name, data, settings) {
+                if (!name) {
+                    throw new SandboxError('name is required');
+                }
+                this.name = name;
+
+                var index = privateReference.push(this) - 1;
+
+                privateData[index] = {
+                    kids: [],
+                    parent: null,
+                    listeners: [],
+                    cache: [],
+                    permissions: [],
+                    settings: {
+                        cache: {
+                            store: true,
+                            timeout: 10000,
+                            debounce: true
+                        }
+                    },
+                    data: data
+                };
+            }
+
+            Sandbox.prototype = {
+                constructor: Sandbox,
+                kid: kid,
+                data: data,
+                on: on,
+                off: _.noop,
+                emit: emit,
+                grant: grant,
+                revoke: revoke,
+                destroy: destroy
+            };
+            Sandbox.prototype.trigger = Sandbox.prototype.emit;
+
+            function getPrivateData(obj) {
+                //jshint validthis: true
+                return privateData[_.indexOf(privateReference, obj)];
+            }
+            function createPrivateKey(key, data) {
+                //jshint validthis: true
+                getPrivateData(this)[key] = data;
+            }
+
+            var addParent = _.partial(createPrivateKey, 'parent');
+
+            function hasSameName(name, obj) {
+                return obj.name === name;
+            }
+
+            function kid(name) {
+                //jshint validthis: true
+                var kids = getPrivateData(this).kids;
+                if (_.some(kids, _.partial(hasSameName, name)) || this.name === name) {
+                    throw new SandboxError('kids should have unique names');
+                }
+                var kido = new Sandbox(name);
+                kids.push(kido);
+                addParent.call(kido, this);
+
+                return kido;
+            }
+
+            function data() {
+                //jshint validthis: true
+                return getPrivateData(this).data;
+            }
+
+            function getListenersForEvent(event) {
+                //jshint validthis: true
+                return _.where(this.listeners, {event: event});
+            }
+
+            function on(event, handler) {
+                //jshint validthis: true
+                var name = this.name,
+                    thisData = getPrivateData(this),
+                    thisListeners = thisData.listeners,
+                    parent, parentData,
+                    getEventListeners, allListeners;
+
+                thisListeners.push({
+                    origin: name,
+                    event: event,
+                    handler: handler
+                });
+
+                if (thisData.settings.cache) {
+                    getEventListeners = _.partial(getListenersForEvent, event);
+                    parent = thisData.parent;
+                    parentData = parent ? getPrivateData(parent) : null;
+                    allListeners = getEventListeners
+                        .call(parentData)
+                        .concat(
+                            _.chain(parentData.kids)
+                                .map(function mapKidsData(kid) {
+                                    return getEventListeners.call(getPrivateData(kid));
+                                })
+                                .flatten()
+                                .value()
+                        );
+
+                    _.each(_.where(thisData.cache, {name: event}), function (cachedEvent) { //TODO: see if that function could be moved out
+                        var data = cachedEvent.data;
+                        _.each(allListeners, function (listener) {
+                            //TODO: check permissions based on listener origin and on thisData permissions and fire matching listeners
+                            listener.handler(data);
+                        });
+                    });
+                }
+            }
+
+            function emit(event, data, settings) {
+                //TODO: timeout in emit method, plus debounce option
+            }
+
+            /**
+             * @param {String|Array|Object} to
+             * @param {Object} permissions
+             */
+            function grant(to, permissions) {
+                //jshint validthis: true
+                if (arguments.length === 1) {
+                    permissions = to;
+                    to = this.name;
+                }
+                if (typeof to === 'string') {
+                    to = [to];
+                }
+
+                var thisData = getPrivateData(this);
+                function addPermissions(target, events, source) {
+                    var targetSource = _.find(thisData.permissions, {target: target, source: source});
+                    if (targetSource) {
+                        targetSource.events = _.union(targetSource.events, events);
+                    } else {
+                        thisData.permissions.push({
+                            target: target,
+                            source: source,
+                            events: events
+                        });
+                    }
+                }
+                _.each(to, function (target) {
+                    _.each(permissions, _.partial(addPermissions, target));
+                });
+            }
+
+            function revoke(from, permissions) {
+                //jshint validthis: true
+                if (arguments.length === 1) {
+                    permissions = from;
+                    from = this.name;
+                }
+                if (typeof from === 'string') {
+                    from = [from];
+                }
+
+                var thisData = getPrivateData(this);
+                function removePermissions(target, events, source) {
+                    //remove when no events left
+                    _.remove(thisData.permissions, function removeDataPermissions(entry) {
+                        if (entry.target === target && entry.source === source) {
+                            entry.events = _.difference(entry.events, events);
+                            return !entry.events.length;
+                        }
+                        return false;
+                    });
+                }
+                _.each(from, function (target) {
+                    _.each(permissions, _.partial(removePermissions, target));
+                });
+            }
+
+            function destroy() {
+                //jshint validthis: true
+                var index = _.indexOf(privateReference, this);
+                privateReference.splice(index, 1);
+                privateData.splice(index, 1);
+            }
+
+            return Sandbox;
+        })();
+
+        /**
+         * @typedef {{Sandbox: Sandbox}} SandboxExports
+         */
+        var _exports = {
+            Sandbox: Sandbox
+        };
+        _.extend(
+            exports,
+            _exports
+        );
+    })
+);

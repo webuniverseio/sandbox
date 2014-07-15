@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Sandbox</title>
+	<script src="vendor/lodash/dist/lodash.compat.js"></script>
+	<script src="dist/sandbox.js"></script>
+</head>
+<body>
+	<script>
+		var Sandbox = sandboxExports.Sandbox;
+		var Pa = new Sandbox('Pa');
+		Pa.grant({So: ['whatever']});
+		Pa.grant(['So', 'Do'], {Pa: ['whatever']});
+		Pa.grant('So', {Pa: ['anything'], Do: ['something else']});
+		Pa.revoke({So: ['whatever']});
+		Pa.revoke('So', {Pa: ['whatever', 'anything'], Do: ['something else']});
+		Pa.revoke('Do', {Pa: ['whatever']});
+	</script>
+</body>
+</html>
