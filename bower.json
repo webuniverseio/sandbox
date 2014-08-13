@@ -1,14 +1,24 @@
 {
-  "name": "SJAA",
-  "version": "0.0.1",
-  "authors": [
-    "Sergey <serge.zarouski@gmail.com>"
+  "name": "Sandbox",
+  "description": "Sandbox with hierarchical support of event management",
+  "license": "http://unlicense.org/",
+  "ignore": [
+    ".idea"
   ],
-  "description": "Scalable javascript applications architecture",
-  "license": "MIT",
-  "homepage": "http://webuniverse.ca",
+  "main": "dist/sandbox.js",
+  "keywords": [
+    "sandbox"
+  ],
+  "authors": [
+    {
+      "name": "Sergey Zarouski",
+      "homepage": "http://webuniverse.club"
+    }
+  ],
+  "homepage": "https://github.com/szarouski/sandbox",
   "private": false,
   "dependencies": {
-    "lodash": "~2.4.1"
+    "lodash": "~2.4.1",
+    "simple-permissions": "~1.0.8"
   }
 }

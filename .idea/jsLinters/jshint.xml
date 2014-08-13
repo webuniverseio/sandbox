@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="JSHintConfiguration" version="2.4.3" use-config-file="false">
-    <option eqnull="false" />
+  <component name="JSHintConfiguration" version="2.5.2" use-config-file="false">
+    <option eqnull="true" />
     <option nonew="true" />
     <option jquery="false" />
     <option nonstandard="false" />
+    <option nomen="false" />
+    <option latedef="nofunc" />
+    <option noyield="true" />
     <option validthis="false" />
     <option plusplus="false" />
     <option funcscope="false" />
-    <option nomen="false" />
     <option curly="true" />
-    <option latedef="nofunc" />
     <option shadow="false" />
     <option predef="define, require" />
-    <option unused="false" />
+    <option unused="vars" />
     <option iterator="false" />
     <option noarg="true" />
     <option esnext="true" />
@@ -29,9 +30,9 @@
     <option asi="false" />
     <option node="true" />
     <option yui="false" />
-    <option supernew="false" />
+    <option supernew="true" />
     <option maxerr="50" />
-    <option eqeqeq="false" />
+    <option eqeqeq="true" />
     <option strict="true" />
     <option moz="false" />
     <option evil="false" />
@@ -40,7 +41,7 @@
     <option sub="true" />
     <option scripturl="false" />
     <option expr="true" />
-    <option debug="true" />
+    <option debug="false" />
     <option bitwise="false" />
     <option laxcomma="false" />
     <option newcap="true" />
@@ -51,18 +52,21 @@
     <option browser="true" />
     <option worker="false" />
     <option es3="true" />
+    <option gcl="false" />
     <option wsh="false" />
     <option prototypejs="false" />
     <option lastsemic="false" />
     <option devel="true" />
     <option camelcase="true" />
     <option boss="false" />
-    <option proto="false" />
     <option couch="false" />
-    <option freeze="false" />
+    <option freeze="true" />
     <option laxbreak="false" />
-    <option mootools="false" />
+    <option maxlen="120" />
     <option multistr="true" />
+    <option nonbsp="true" />
+    <option proto="false" />
+    <option mootools="false" />
     <option globalstrict="false" />
   </component>
 </project>

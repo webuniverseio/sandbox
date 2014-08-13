@@ -2,3 +2,4 @@
 **/.idea/tasks.xml
 **/vendor
 **/node_modules
+**/coverage

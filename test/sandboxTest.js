@@ -1,39 +1,42 @@
-/*global describe, it, expect, runs, waitsFor*/
+/*global describe, it, expect, jasmine*/
 (function () {
 	'use strict';
 	define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
-        var Sandbox = sandboxExport.Sandbox,
+		var grandParentName = 'Granny';
+		var Sandbox = sandboxExport.Sandbox,
             testData = {
                 a: 1,
                 b: 2
             },
-            GrandParent = new Sandbox('Granny', testData);
+            GrandParent = new Sandbox(grandParentName, testData);
 
         describe('test api', function (param) {
             it('should have name', function () {
-                expect(GrandParent.name).toEqual('Granny');
+                expect(GrandParent.name).toBe(grandParentName);
             });
             it('should throw when no name specified', function () {
                 expect(function () {
-                    var t = new Sandbox();
+                    //jshint nonew:false
+	                new Sandbox();
                 }).toThrow();
                 expect(function () {
                     GrandParent.kid();
                 }).toThrow();
             });
             it('should have methods', function () {
-                expect(GrandParent.kid).toBeDefined();
-                expect(GrandParent.data).toBeDefined();
-                expect(GrandParent.on).toBeDefined();
-                expect(GrandParent.off).toBeDefined();
-                expect(GrandParent.emit).toBeDefined();
-                expect(GrandParent.grant).toBeDefined();
-                expect(GrandParent.revoke).toBeDefined();
-                expect(GrandParent.destroy).toBeDefined();
+	            _.each(['kid', 'data', 'on', 'off', 'emit', 'grant', 'revoke', 'destroy'], function (method) {
+		            expect(GrandParent[method]).toBeDefined();
+	            });
             });
             it('should store data', function () {
                 expect(GrandParent.data()).toEqual(testData);
             });
+	        it('should check that data is immutable', function () {
+		        var data = GrandParent.data();
+		        data.c = 10;
+		        expect(testData.c).not.toBeDefined();
+		        expect(GrandParent.data().c).not.toBeDefined();
+	        });
             it('should throw when call .data after .destroy', function () {
                 GrandParent.destroy();
                 expect(GrandParent.data).toThrow();
@@ -46,9 +49,9 @@
                 Son = Father.kid(names[2]),
                 Daughter = Father.kid(names[3]);
             it('should be instance of Sandbox', function () {
-                expect(_.every([Father, Mother, Son, Daughter], function (obj) {
-                    return obj instanceof Sandbox;
-                })).toBeTruthy();
+                _.each([Father, Mother, Son, Daughter], function (obj) {
+	                expect(obj).toEqual(jasmine.any(Sandbox));
+                });
             });
             it('should throw if kid name is not unique', function () {
                 expect(function () {
@@ -63,7 +66,8 @@
         });
 
 		describe('test sandbox api synchronously', function () {
-			/*it('check that Base can receive and emit cached events internally (without permissions) asynchronously', function (done) {
+			/*it('check that Base can receive and emit cached events internally (without permissions) asynchronously',
+				function (done) {
 				var s = new Sandbox('B'),
 				    receivedValue = false,
 				    receivedValue2 = 0;
@@ -95,8 +99,10 @@
 		GrandParent.emit('someEvent', 'GrandParent.on will get that');
 		GrandParent.off('someEvent');
 
-		GrandParent.emit('someOtherEvent', 'this might (based on cache settings) be passed to GrandParent when it\'ll start to listen');
-		GrandParent.on('someOtherEvent', function (data) {*//*...*//*}); //will receive notification right away if data was cached and upon next notification call
+		GrandParent.emit('someOtherEvent', 'this might (based on cache settings) be passed to GrandParent when it\'ll
+		start to listen');
+		GrandParent.on('someOtherEvent', function (data) {*//*...*//*}); //will receive notification right away if data
+		was cached and upon next notification call
 
 		Father.on('someOtherEvent', function (data) {*//*...*//*});
 		Mother.on('someOtherEvent', function (data) {*//*...*//*});
@@ -104,9 +110,11 @@
 		Father.emit('someOtherEvent', 'GrandParent and Mother will not get this data, but Father will');
 
 		Father.emit('someOtherEvent', 'GrandParent will not get this data (yet), but Father will');
-		GrandParent.grant({Father: ['someOtherEvent']}); //subscribe GrandParent to receive Father['someOtherEvent'] notifications
+		 //subscribe GrandParent to receive Father['someOtherEvent'] notifications
+		GrandParent.grant({Father: ['someOtherEvent']});
 		Father.emit('someOtherEvent', 'GrandParent will get that message from Father');
-		GrandParent.emit('someOtherEvent', 'only GrandParent will get that message, because Father wasn\'t subscribed to get messages from GrandParent');
+		GrandParent.emit('someOtherEvent', 'only GrandParent will get that message, because Father wasn\'t subscribed
+		 to get messages from GrandParent');
 		GrandParent
 			.grant('Father', {GrandParent: ['someOtherEvent']})
 			.grant('Mother', {GrandParent: ['someOtherEvent']})

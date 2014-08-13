@@ -18,7 +18,7 @@ for (var file in window.__karma__.files) {
 
 requirejs.config({
 	// Karma serves files from '/base'
-	baseUrl: '/base/dist/',
+	baseUrl: '/base/lib/',
 
 	paths: {
 		'_': '../vendor/lodash/dist/lodash.compat'
