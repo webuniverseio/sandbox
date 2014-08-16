@@ -2,7 +2,8 @@
 <project version="4">
   <component name="JavaScriptLibraryMappings">
     <file url="PROJECT" libraries="{jasmine-DefinitelyTyped, lodash-DefinitelyTyped, requirejs-DefinitelyTyped}" />
-    <includedPredefinedLibrary name="Node.js Globals" />
+    <excludedPredefinedLibrary name="HTML" />
+    <excludedPredefinedLibrary name="HTML5 / EcmaScript 5" />
   </component>
 </project>
 

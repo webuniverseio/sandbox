@@ -2,17 +2,17 @@
 (function () {
 	'use strict';
 	define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
-		var grandParentName = 'Granny';
+		var parentName = 'Pa';
 		var Sandbox = sandboxExport.Sandbox,
             testData = {
                 a: 1,
                 b: 2
             },
-            GrandParent = new Sandbox(grandParentName, testData);
+            parent = new Sandbox(parentName, testData);
 
-        describe('test api', function (param) {
+        describe('sandbox api', function (param) {
             it('should have name', function () {
-                expect(GrandParent.name).toBe(grandParentName);
+                expect(parent.name).toBe(parentName);
             });
             it('should throw when no name specified', function () {
                 expect(function () {
@@ -20,32 +20,46 @@
 	                new Sandbox();
                 }).toThrow();
                 expect(function () {
-                    GrandParent.kid();
+                    parent.kid();
                 }).toThrow();
             });
             it('should have methods', function () {
 	            _.each(['kid', 'data', 'on', 'off', 'emit', 'grant', 'revoke', 'destroy'], function (method) {
-		            expect(GrandParent[method]).toBeDefined();
+		            expect(parent[method]).toBeDefined();
 	            });
             });
             it('should store data', function () {
-                expect(GrandParent.data()).toEqual(testData);
+	            var primitive = 5;
+	            expect(new Sandbox('s', primitive).data()).toBe(primitive);
+	            var arr = [];
+	            expect(new Sandbox('s', arr).data()).toEqual(arr);
+                expect(parent.data()).toEqual(testData);
             });
 	        it('should check that data is immutable', function () {
-		        var data = GrandParent.data();
+		        var data = parent.data();
 		        data.c = 10;
 		        expect(testData.c).not.toBeDefined();
-		        expect(GrandParent.data().c).not.toBeDefined();
+		        expect(parent.data().c).not.toBeDefined();
+		        var number = 20,
+		            arr = [number],
+			        s = new Sandbox('s', arr),
+			        sData = s.data();
+		        sData[1] = 10;
+		        expect(arr[0]).toBe(number);
+		        expect(s.data()[0]).toBe(number);
+		        expect(arr[1]).not.toBeDefined();
+		        expect(s.data()[1]).not.toBeDefined();
 	        });
             it('should throw when call .data after .destroy', function () {
-                GrandParent.destroy();
-                expect(GrandParent.data).toThrow();
+	            var s = new Sandbox('s', testData);
+	            s.destroy();
+                expect(s.data).toThrow();
             });
         });
-        describe('test children', function (param) {
+        describe('sandbox children', function (param) {
             var names = ['Father', 'Mother', 'Son', 'Daughter'];
-            var Father = GrandParent.kid(names[0]),
-                Mother = GrandParent.kid(names[1]),
+            var Father = parent.kid(names[0]),
+                Mother = parent.kid(names[1]),
                 Son = Father.kid(names[2]),
                 Daughter = Father.kid(names[3]);
             it('should be instance of Sandbox', function () {
@@ -53,78 +67,91 @@
 	                expect(obj).toEqual(jasmine.any(Sandbox));
                 });
             });
-            it('should throw if kid name is not unique', function () {
+            it('should throw if name is not unique', function () {
                 expect(function () {
                     Father.kid(names[2]);
                 }).toThrow();
             });
-            it('should throw if kid name is same as parent', function () {
+            it('should throw if name is same as parent', function () {
                 expect(function () {
                     Father.kid(names[0]);
                 }).toThrow();
             });
         });
 
-		describe('test sandbox api synchronously', function () {
-			/*it('check that Base can receive and emit cached events internally (without permissions) asynchronously',
-				function (done) {
-				var s = new Sandbox('B'),
-				    receivedValue = false,
-				    receivedValue2 = 0;
-				setTimeout(function () {
-					s.notify('someEvent', true);
-					s.notify('someOtherEvent', 1);
-				}, 200);
+		describe('sandbox events functionality', function () {
+			it('should subscribe, fire, unsubscribe to/from event', function () {
+				var data = [
+					'parent.on will get that',
+					'plus that'
+				];
+				var listener = jasmine.createSpy('listener');
 
-				setTimeout(function () {
-					s.listen('someEvent', function (value) {
-						receivedValue = value;
-					});
-					s.listen('someOtherEvent', function (value) {
-						receivedValue2 = value;
-					});
-				}, 400);
+				parent.on('someEvent', listener);
+				expect(listener).not.toHaveBeenCalled();
+				parent.emit('someEvent', data);
+				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+				parent.emit('someEvent', data[0]);
+				expect(listener).toHaveBeenCalledWith(data[0]);
+				parent.off('someEvent');
+				parent.emit('someEvent', data);
+				expect(listener.callCount).toEqual(2);
+			});
 
-				setTimeout(function () {
-					expect(receivedValue).toEqual(true);
-					expect(receivedValue2).toEqual(1);
-					done();
-				}, 600);
-			});*/
+			/*parent.emit('someOtherEvent', 'this might (based on cache settings) be passed to parent when it\'ll
+			start to listen');
+			parent.on('someOtherEvent', function (data) {*//*...*//*}); //will receive notification right away if data
+			was cached and upon next notification call
 
+			Father.on('someOtherEvent', function (data) {*//*...*//*});
+			Mother.on('someOtherEvent', function (data) {*//*...*//*});
+			parent.emit('someOtherEvent', 'Father and Mother will not get this data, but parent will');
+			Father.emit('someOtherEvent', 'parent and Mother will not get this data, but Father will');
+
+			Father.emit('someOtherEvent', 'parent will not get this data (yet), but Father will');*/
 		});
 
-		/*
-		GrandParent.on('someEvent', function (data) {*//*...*//*}); //listen for event
-		GrandParent.emit('someEvent', 'GrandParent.on will get that');
-		GrandParent.off('someEvent');
+		/*it('check that Base can receive and emit cached events internally (without permissions) asynchronously',
+		 function (done) {
+		 var s = new Sandbox('B'),
+		 receivedValue = false,
+		 receivedValue2 = 0;
+		 setTimeout(function () {
+		 s.notify('someEvent', true);
+		 s.notify('someOtherEvent', 1);
+		 }, 200);
 
-		GrandParent.emit('someOtherEvent', 'this might (based on cache settings) be passed to GrandParent when it\'ll
-		start to listen');
-		GrandParent.on('someOtherEvent', function (data) {*//*...*//*}); //will receive notification right away if data
-		was cached and upon next notification call
+		 setTimeout(function () {
+		 s.listen('someEvent', function (value) {
+		 receivedValue = value;
+		 });
+		 s.listen('someOtherEvent', function (value) {
+		 receivedValue2 = value;
+		 });
+		 }, 400);
 
-		Father.on('someOtherEvent', function (data) {*//*...*//*});
-		Mother.on('someOtherEvent', function (data) {*//*...*//*});
-		GrandParent.emit('someOtherEvent', 'Father and Mother will not get this data, but GrandParent will');
-		Father.emit('someOtherEvent', 'GrandParent and Mother will not get this data, but Father will');
+		 setTimeout(function () {
+		 expect(receivedValue).toEqual(true);
+		 expect(receivedValue2).toEqual(1);
+		 done();
+		 }, 600);
+		 });*/
 
-		Father.emit('someOtherEvent', 'GrandParent will not get this data (yet), but Father will');
-		 //subscribe GrandParent to receive Father['someOtherEvent'] notifications
-		GrandParent.grant({Father: ['someOtherEvent']});
-		Father.emit('someOtherEvent', 'GrandParent will get that message from Father');
-		GrandParent.emit('someOtherEvent', 'only GrandParent will get that message, because Father wasn\'t subscribed
-		 to get messages from GrandParent');
-		GrandParent
-			.grant('Father', {GrandParent: ['someOtherEvent']})
-			.grant('Mother', {GrandParent: ['someOtherEvent']})
-			//or GrandParent.grant(['Father', 'Mother'], {GrandParent: ['someOtherEvent']});
-			.emit('someOtherEvent', 'GrandParent, Father and Mother will get that notification from GrandParent');
-		GrandParent
+		 //subscribe parent to receive Father['someOtherEvent'] notifications
+		/*parent.grant({Father: ['someOtherEvent']});
+		Father.emit('someOtherEvent', 'parent will get that message from Father');
+		parent.emit('someOtherEvent', 'only parent will get that message, because Father wasn\'t subscribed
+		 to get messages from parent');
+		parent
+			.grant('Father', {parent: ['someOtherEvent']})
+			.grant('Mother', {parent: ['someOtherEvent']})
+			//or parent.grant(['Father', 'Mother'], {parent: ['someOtherEvent']});
+			.emit('someOtherEvent', 'parent, Father and Mother will get that notification from parent');
+		parent
 			.off('someOtherEvent')
-			.reject('Father', {GrandParent: ['someOtherEvent']})
-			.reject('Mother', {GrandParent: ['someOtherEvent']})
-			//or GrandParent.reject(['Father', 'Mother'], {GrandParent: ['someOtherEvent']});
+			.reject('Father', {parent: ['someOtherEvent']})
+			.reject('Mother', {parent: ['someOtherEvent']})
+			//or parent.reject(['Father', 'Mother'], {parent: ['someOtherEvent']});
 			.emit('someOtherEvent', 'no one will get that message');
 
 		Son.emit('yetAnotherEvent', 'who do you think will get that message');

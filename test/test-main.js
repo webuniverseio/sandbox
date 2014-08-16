@@ -1,4 +1,4 @@
-/*global requirejs, __karma__*/
+/*global requirejs*/
 /**
  * @typedef {Object} __karma__
  * @property {Object} files
@@ -21,7 +21,8 @@ requirejs.config({
 	baseUrl: '/base/lib/',
 
 	paths: {
-		'_': '../vendor/lodash/dist/lodash.compat'
+		'_': '../vendor/lodash/dist/lodash.compat',
+		'simple-permissions': '../vendor/simple-permissions/lib/simple-permissions'
 	},
 
 	// ask Require.js to load these files (all our tests)
