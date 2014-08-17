@@ -85,17 +85,21 @@
 					'parent.on will get that',
 					'plus that'
 				];
-				var listener = jasmine.createSpy('listener');
+				var listener = jasmine.createSpy('listener'),
+					listener2 = jasmine.createSpy('listener2');
 
 				parent.on('someEvent', listener);
 				expect(listener).not.toHaveBeenCalled();
 				parent.emit('someEvent', data);
 				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+				parent.on('someEvent', listener2);
 				parent.emit('someEvent', data[0]);
 				expect(listener).toHaveBeenCalledWith(data[0]);
+				expect(listener2).toHaveBeenCalledWith(data[0]);
 				parent.off('someEvent');
 				parent.emit('someEvent', data);
 				expect(listener.callCount).toEqual(2);
+				expect(listener2.callCount).toEqual(1);
 			});
 
 			/*parent.emit('someOtherEvent', 'this might (based on cache settings) be passed to parent when it\'ll
