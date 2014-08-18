@@ -2,8 +2,12 @@
 (function () {
 	'use strict';
 	define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
-		var parentName = 'Pa';
-		var Sandbox = sandboxExport.Sandbox,
+		function name() {
+			return _.uniqueId('sandbox_');
+		}
+
+		var parentName = 'Pa',
+			Sandbox = sandboxExport.Sandbox,
             testData = {
                 a: 1,
                 b: 2
@@ -30,9 +34,9 @@
             });
             it('should store data', function () {
 	            var primitive = 5;
-	            expect(new Sandbox('s', primitive).data()).toBe(primitive);
+	            expect(new Sandbox(name(), primitive).data()).toBe(primitive);
 	            var arr = [];
-	            expect(new Sandbox('s', arr).data()).toEqual(arr);
+	            expect(new Sandbox(name(), arr).data()).toEqual(arr);
                 expect(parent.data()).toEqual(testData);
             });
 	        it('should check that data is immutable', function () {
@@ -42,7 +46,7 @@
 		        expect(parent.data().c).not.toBeDefined();
 		        var number = 20,
 		            arr = [number],
-			        s = new Sandbox('s', arr),
+			        s = new Sandbox(name(), arr),
 			        sData = s.data();
 		        sData[1] = 10;
 		        expect(arr[0]).toBe(number);
@@ -51,7 +55,7 @@
 		        expect(s.data()[1]).not.toBeDefined();
 	        });
             it('should throw when call .data after .destroy', function () {
-	            var s = new Sandbox('s', testData);
+	            var s = new Sandbox(name(), testData);
 	            s.destroy();
                 expect(s.data).toThrow();
             });
@@ -71,11 +75,17 @@
                 expect(function () {
                     Father.kid(names[2]);
                 }).toThrow();
+	            expect(function () {
+		            new Sandbox(parentName); // jshint ignore:line
+	            }).toThrow();
             });
             it('should throw if name is same as parent', function () {
                 expect(function () {
                     Father.kid(names[0]);
                 }).toThrow();
+	            expect(function () {
+		            new Sandbox('♥'); // jshint ignore:line
+	            }).toThrow();
             });
         });
 
