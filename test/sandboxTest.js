@@ -1,4 +1,4 @@
-/*global describe, it, expect, jasmine*/
+/*global describe, it, expect, beforeEach, afterEach, jasmine*/
 (function () {
 	'use strict';
 	define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
@@ -35,9 +35,9 @@
             it('should store data', function () {
 	            var primitive = 5;
 	            expect(new Sandbox(name(), primitive).data()).toBe(primitive);
-	            var arr = [];
-	            expect(new Sandbox(name(), arr).data()).toEqual(arr);
-                expect(parent.data()).toEqual(testData);
+	            var arr = [10];
+	            expect(new Sandbox(name(), arr).data()).toEqual(jasmine.objectContaining(arr));
+                expect(parent.data()).toEqual(jasmine.objectContaining(testData));
             });
 	        it('should check that data is immutable', function () {
 		        var data = parent.data();
@@ -48,7 +48,8 @@
 		            arr = [number],
 			        s = new Sandbox(name(), arr),
 			        sData = s.data();
-		        sData[1] = 10;
+		        sData[0] = number - 1;
+		        sData[1] = number - 2;
 		        expect(arr[0]).toBe(number);
 		        expect(s.data()[0]).toBe(number);
 		        expect(arr[1]).not.toBeDefined();
@@ -60,7 +61,7 @@
                 expect(s.data).toThrow();
             });
         });
-        describe('sandbox children', function (param) {
+        describe('sandbox children', function () {
             var names = ['Father', 'Mother', 'Son', 'Daughter'];
             var Father = parent.kid(names[0]),
                 Mother = parent.kid(names[1]),
@@ -87,70 +88,111 @@
 		            new Sandbox('♥'); // jshint ignore:line
 	            }).toThrow();
             });
+	        it('should destroy children recursively', function () {
+		        Father.destroy();
+		        Mother.destroy();
+		        expect(Father.data).toThrow();
+		        expect(Son.data).toThrow();
+	        });
         });
 
 		describe('sandbox events functionality', function () {
-			it('should subscribe, fire, unsubscribe to/from event', function () {
-				var data = [
+			var listener, listener2, listener3,
+				sandbox,
+				data = [
 					'parent.on will get that',
 					'plus that'
-				];
-				var listener = jasmine.createSpy('listener'),
-					listener2 = jasmine.createSpy('listener2');
+				],
+				originalTimeout;
 
-				parent.on('someEvent', listener);
-				expect(listener).not.toHaveBeenCalled();
-				parent.emit('someEvent', data);
-				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
-				parent.on('someEvent', listener2);
-				parent.emit('someEvent', data[0]);
-				expect(listener).toHaveBeenCalledWith(data[0]);
-				expect(listener2).toHaveBeenCalledWith(data[0]);
-				parent.off('someEvent');
-				parent.emit('someEvent', data);
-				expect(listener.callCount).toEqual(2);
-				expect(listener2.callCount).toEqual(1);
+			beforeEach(function() {
+				listener = jasmine.createSpy('listener');
+				listener2 = jasmine.createSpy('listener2');
+				listener3 = jasmine.createSpy('listener3');
+
+				originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+				jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 			});
 
-			/*parent.emit('someOtherEvent', 'this might (based on cache settings) be passed to parent when it\'ll
-			start to listen');
-			parent.on('someOtherEvent', function (data) {*//*...*//*}); //will receive notification right away if data
-			was cached and upon next notification call
+			afterEach(function() {
+				jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+			});
 
-			Father.on('someOtherEvent', function (data) {*//*...*//*});
-			Mother.on('someOtherEvent', function (data) {*//*...*//*});
-			parent.emit('someOtherEvent', 'Father and Mother will not get this data, but parent will');
-			Father.emit('someOtherEvent', 'parent and Mother will not get this data, but Father will');
+			it('should subscribe, fire, unsubscribe to/from event', function () {
+				sandbox = new Sandbox(name());
+				sandbox.on('someEvent', listener);
+				expect(listener).not.toHaveBeenCalled();
+				sandbox.emit('someEvent', data);
+				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+				sandbox.on('someEvent', listener2);
+				sandbox.emit('someEvent', data[0]);
+				expect(listener).toHaveBeenCalledWith(data[0]);
+				expect(listener2).toHaveBeenCalledWith(data[0]);
+				sandbox.off('someEvent');
+				sandbox.emit('someEvent', data);
+				expect(listener.calls.count()).toEqual(2);
+				expect(listener2.calls.count()).toEqual(1);
+			});
 
-			Father.emit('someOtherEvent', 'parent will not get this data (yet), but Father will');*/
+			it('should store events in a cache if no listeners existed yet', function (done) {
+				sandbox = new Sandbox(name(), undefined, {
+					cache: {
+						expire: 1000
+					}
+				});
+				sandbox.emit('someEvent', data);
+				sandbox.on('someEvent', listener);
+				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+				setTimeout(function () {
+					//should wait for expire time
+					sandbox.on('someEvent', listener2);
+					expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
+				}, 750);
+				setTimeout(function () {
+					//because it works as debounce by default
+					sandbox.on('someEvent', listener2);
+					expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
+				}, 1500);
+				setTimeout(function () {
+				    //expired
+					sandbox.on('someEvent', listener3);
+					expect(listener3).not.toHaveBeenCalled();
+					done();
+				}, 3000);
+			});
+
+			it('should store events in a cache and expire after timeout', function (done) {
+				sandbox = new Sandbox(name(), undefined, {
+					cache: {
+						expire: 1000,
+						debounce: false
+					}
+				});
+				sandbox.emit('someEvent', data);
+				sandbox.on('someEvent', listener);
+				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+				setTimeout(function () {
+					//should wait for expire time
+					sandbox.on('someEvent', listener2);
+					expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
+				}, 750);
+				setTimeout(function () {
+					//because it works as debounce by default
+					sandbox.on('someEvent', listener2);
+					expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
+					done();
+				}, 1500);
+			});
 		});
 
-		/*it('check that Base can receive and emit cached events internally (without permissions) asynchronously',
-		 function (done) {
-		 var s = new Sandbox('B'),
-		 receivedValue = false,
-		 receivedValue2 = 0;
-		 setTimeout(function () {
-		 s.notify('someEvent', true);
-		 s.notify('someOtherEvent', 1);
-		 }, 200);
-
-		 setTimeout(function () {
-		 s.listen('someEvent', function (value) {
-		 receivedValue = value;
-		 });
-		 s.listen('someOtherEvent', function (value) {
-		 receivedValue2 = value;
-		 });
-		 }, 400);
-
-		 setTimeout(function () {
-		 expect(receivedValue).toEqual(true);
-		 expect(receivedValue2).toEqual(1);
-		 done();
-		 }, 600);
-		 });*/
-
+		describe('sandbox permissions', function () {
+			//TODO: all describes are called before it
+			var names = ['Father', 'Mother', 'Son', 'Daughter'];
+			var Father = parent.kid(names[0]),
+				Mother = parent.kid(names[1]),
+				Son = Father.kid(names[2]),
+				Daughter = Father.kid(names[3]);
+		});
 		 //subscribe parent to receive Father['someOtherEvent'] notifications
 		/*parent.grant({Father: ['someOtherEvent']});
 		Father.emit('someOtherEvent', 'parent will get that message from Father');
