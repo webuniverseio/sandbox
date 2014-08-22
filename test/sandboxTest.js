@@ -11,10 +11,17 @@
             testData = {
                 a: 1,
                 b: 2
-            },
-            parent = new Sandbox(parentName, testData);
+            };
 
         describe('sandbox api', function (param) {
+	        var parent;
+	        beforeEach(function () {
+		        parent = new Sandbox(parentName, testData);
+	        });
+	        afterEach(function () {
+		        parent.destroy();
+	        });
+
             it('should have name', function () {
                 expect(parent.name).toBe(parentName);
             });
@@ -33,10 +40,13 @@
 	            });
             });
             it('should store data', function () {
-	            var primitive = 5;
-	            expect(new Sandbox(name(), primitive).data()).toBe(primitive);
+	            var primitive = 5, s;
+	            expect((s = new Sandbox(name(), primitive)).data()).toBe(primitive);
+	            s.destroy();
+
 	            var arr = [10];
-	            expect(new Sandbox(name(), arr).data()).toEqual(jasmine.objectContaining(arr));
+	            expect((s = new Sandbox(name(), arr)).data()).toEqual(jasmine.objectContaining(arr));
+	            s.destroy();
                 expect(parent.data()).toEqual(jasmine.objectContaining(testData));
             });
 	        it('should check that data is immutable', function () {
@@ -54,6 +64,7 @@
 		        expect(s.data()[0]).toBe(number);
 		        expect(arr[1]).not.toBeDefined();
 		        expect(s.data()[1]).not.toBeDefined();
+		        s.destroy();
 	        });
             it('should throw when call .data after .destroy', function () {
 	            var s = new Sandbox(name(), testData);
@@ -62,11 +73,19 @@
             });
         });
         describe('sandbox children', function () {
-            var names = ['Father', 'Mother', 'Son', 'Daughter'];
-            var Father = parent.kid(names[0]),
-                Mother = parent.kid(names[1]),
-                Son = Father.kid(names[2]),
-                Daughter = Father.kid(names[3]);
+	        var parent, Father, Mother, Son, Daughter,
+		        names = ['Father', 'Mother', 'Son', 'Daughter'];
+	        beforeEach(function () {
+		        parent = new Sandbox(parentName, testData);
+		        Father = parent.kid(names[0]);
+		        Mother = parent.kid(names[1]);
+		        Son = Father.kid(names[2]);
+		        Daughter = Father.kid(names[3]);
+	        });
+	        afterEach(function () {
+		        parent.destroy();
+	        });
+
             it('should be instance of Sandbox', function () {
                 _.each([Father, Mother, Son, Daughter], function (obj) {
 	                expect(obj).toEqual(jasmine.any(Sandbox));
@@ -90,7 +109,6 @@
             });
 	        it('should destroy children recursively', function () {
 		        Father.destroy();
-		        Mother.destroy();
 		        expect(Father.data).toThrow();
 		        expect(Son.data).toThrow();
 	        });
@@ -116,6 +134,9 @@
 
 			afterEach(function() {
 				jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+				if (sandbox) {
+					sandbox.destroy();
+				}
 			});
 
 			it('should subscribe, fire, unsubscribe to/from event', function () {
@@ -186,12 +207,50 @@
 		});
 
 		describe('sandbox permissions', function () {
-			//TODO: all describes are called before it
-			var names = ['Father', 'Mother', 'Son', 'Daughter'];
-			var Father = parent.kid(names[0]),
-				Mother = parent.kid(names[1]),
-				Son = Father.kid(names[2]),
+			var parent, Father, Mother, Son, Daughter, listener,
+				names = ['Father', 'Mother', 'Son', 'Daughter'];
+			beforeEach(function () {
+				listener = jasmine.createSpy('listener');
+				parent = new Sandbox(parentName, testData);
+				Father = parent.kid(names[0]);
+				Mother = parent.kid(names[1]);
+				Son = Father.kid(names[2]);
 				Daughter = Father.kid(names[3]);
+			});
+			afterEach(function () {
+				parent.destroy();
+			});
+
+			describe('kids from parents', function() {
+				it('can\'t get events', function () {
+					Father.on('ping', listener);
+					parent.emit('ping');
+					expect(listener.calls.count()).toBe(0);
+				});
+				it('can get events with proper permissions', function () {
+					var permissions = {};
+					permissions[parentName] = ['ping'];
+					parent.grant(['Father', 'Mother'], permissions);
+					Father.on('ping', listener);
+					Mother.on('ping', listener);
+					parent.emit('ping');
+					expect(listener.calls.count()).toBe(2);
+				});
+			});
+			describe('kids from kids', function() {
+				it('can\'t get events', function () {
+					Father.on('ping', listener);
+					Mother.emit('ping');
+					expect(listener.calls.count()).toBe(0);
+				});
+			});
+			describe('parent from kids', function() {
+				it('can\'t get events', function () {
+					Father.on('ping', listener);
+					Son.emit('ping');
+					expect(listener.calls.count()).toBe(0);
+				});
+			});
 		});
 		 //subscribe parent to receive Father['someOtherEvent'] notifications
 		/*parent.grant({Father: ['someOtherEvent']});
