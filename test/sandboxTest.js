@@ -99,12 +99,12 @@
 		            new Sandbox(parentName); // jshint ignore:line
 	            }).toThrow();
             });
-            it('should throw if name is same as parent', function () {
+            it('should throw if name is same as parent/grand parent', function () {
                 expect(function () {
-                    Father.kid(names[0]);
+	                Father.kid(names[0]);
                 }).toThrow();
 	            expect(function () {
-		            new Sandbox('♥'); // jshint ignore:line
+		            Father.kid(parentName);
 	            }).toThrow();
             });
 	        it('should destroy children recursively', function () {
@@ -207,10 +207,11 @@
 		});
 
 		describe('sandbox permissions', function () {
-			var parent, Father, Mother, Son, Daughter, listener,
+			var parent, Father, Mother, Son, Daughter, listener, listener2,
 				names = ['Father', 'Mother', 'Son', 'Daughter'];
 			beforeEach(function () {
 				listener = jasmine.createSpy('listener');
+				listener2 = jasmine.createSpy('listener');
 				parent = new Sandbox(parentName, testData);
 				Father = parent.kid(names[0]);
 				Mother = parent.kid(names[1]);
@@ -233,7 +234,9 @@
 					parent.grant(['Father', 'Mother'], permissions);
 					Father.on('ping', listener);
 					Mother.on('ping', listener);
-					parent.emit('ping');
+					parent
+						.emit('ping')
+						.revoke(['Father', 'Mother'], permissions);
 					expect(listener.calls.count()).toBe(2);
 				});
 			});
@@ -243,12 +246,30 @@
 					Mother.emit('ping');
 					expect(listener.calls.count()).toBe(0);
 				});
+				it('can get events with proper permissions', function () {
+					parent
+						.grant(Father.name, {Mother: ['ping']})
+						.grant(Mother.name, {Father: ['pong']});
+					Father.on('ping', listener);
+					Mother.on('pong', listener2);
+					Mother.emit('ping');
+					Father.emit('pong');
+					expect(listener.calls.count()).toBe(1);
+					expect(listener2.calls.count()).toBe(1);
+				});
 			});
 			describe('parent from kids', function() {
 				it('can\'t get events', function () {
 					Father.on('ping', listener);
 					Son.emit('ping');
 					expect(listener.calls.count()).toBe(0);
+				});
+				it('can get events with proper permissions', function () {
+					parent
+						.grant({Father: ['ping']})
+						.on('ping', listener);
+					Father.emit('ping');
+					expect(listener.calls.count()).toBe(1);
 				});
 			});
 		});
