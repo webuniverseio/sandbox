@@ -139,22 +139,6 @@
 				}
 			});
 
-			it('should subscribe, fire, unsubscribe to/from event', function () {
-				sandbox = new Sandbox(name());
-				sandbox.on('someEvent', listener);
-				expect(listener).not.toHaveBeenCalled();
-				sandbox.emit('someEvent', data);
-				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
-				sandbox.on('someEvent', listener2);
-				sandbox.emit('someEvent', data[0]);
-				expect(listener).toHaveBeenCalledWith(data[0]);
-				expect(listener2).toHaveBeenCalledWith(data[0]);
-				sandbox.off('someEvent');
-				sandbox.emit('someEvent', data);
-				expect(listener.calls.count()).toEqual(2);
-				expect(listener2.calls.count()).toEqual(1);
-			});
-
 			it('should store events in a cache if no listeners existed yet', function (done) {
 				sandbox = new Sandbox(name(), undefined, {
 					cache: {
@@ -220,6 +204,27 @@
 			});
 			afterEach(function () {
 				parent.destroy();
+			});
+
+			describe('parent from itself', function() {
+				it('always get events without permissions', function () {
+					var data = [
+						'parent.on will get that',
+						'plus that'
+					];
+					parent.on('someEvent', listener);
+					expect(listener).not.toHaveBeenCalled();
+					parent.emit('someEvent', data);
+					expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+					parent.on('someEvent', listener2);
+					parent.emit('someEvent', data[0]);
+					expect(listener).toHaveBeenCalledWith(data[0]);
+					expect(listener2).toHaveBeenCalledWith(data[0]);
+					parent.off('someEvent');
+					parent.emit('someEvent', data);
+					expect(listener.calls.count()).toEqual(2);
+					expect(listener2.calls.count()).toEqual(1);
+				});
 			});
 
 			describe('kids from parents', function() {
