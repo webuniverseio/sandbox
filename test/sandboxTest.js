@@ -2,115 +2,87 @@
 (function () {
 	'use strict';
 	define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
-		function name() {
-			return _.uniqueId('sandbox_');
-		}
-
-		var parentName = 'Pa',
-			Sandbox = sandboxExport.Sandbox,
+		var Sandbox = sandboxExport.Sandbox,
             testData = {
                 a: 1,
                 b: 2
             };
 
         describe('sandbox api', function (param) {
-	        var parent;
+	        var foo;
 	        beforeEach(function () {
-		        parent = new Sandbox(parentName, testData);
+		        foo = new Sandbox(false, testData);
 	        });
 	        afterEach(function () {
-		        parent.destroy();
+		        foo.destroy();
 	        });
 
-            it('should have name', function () {
-                expect(parent.name).toBe(parentName);
-            });
-            it('should throw when no name specified', function () {
-                expect(function () {
-                    //jshint nonew:false
-	                new Sandbox();
-                }).toThrow();
-                expect(function () {
-                    parent.kid();
-                }).toThrow();
-            });
             it('should have methods', function () {
-	            _.each(['kid', 'data', 'on', 'off', 'emit', 'grant', 'revoke', 'destroy'], function (method) {
-		            expect(parent[method]).toBeDefined();
+	            _.each(['kid', 'data', 'on', 'off', 'emit', 'grant', 'revoke', 'destroy', 'name'], function (method) {
+		            expect(foo[method]).toBeDefined();
 	            });
             });
+	        it('can have name', function () {
+		        var name = 'whoa';
+		        expect(new Sandbox(name).name()).toBe(name);
+	        });
             it('should store data', function () {
-	            var primitive = 5, s;
-	            expect((s = new Sandbox(name(), primitive)).data()).toBe(primitive);
-	            s.destroy();
+	            var primitive = 5, bar;
+	            expect((bar = new Sandbox(false, primitive)).data()).toBe(primitive);
+	            bar.destroy();
 
 	            var arr = [10];
-	            expect((s = new Sandbox(name(), arr)).data()).toEqual(jasmine.objectContaining(arr));
-	            s.destroy();
-                expect(parent.data()).toEqual(jasmine.objectContaining(testData));
+	            expect((bar = new Sandbox(false, arr)).data()).toEqual(jasmine.objectContaining(arr));
+	            bar.destroy();
+                expect(foo.data()).toEqual(jasmine.objectContaining(testData));
             });
 	        it('should check that data is immutable', function () {
-		        var data = parent.data();
+		        var data = foo.data();
 		        data.c = 10;
 		        expect(testData.c).not.toBeDefined();
-		        expect(parent.data().c).not.toBeDefined();
+		        expect(foo.data().c).not.toBeDefined();
 		        var number = 20,
 		            arr = [number],
-			        s = new Sandbox(name(), arr),
-			        sData = s.data();
+			        bar = new Sandbox(false, arr),
+			        sData = bar.data();
 		        sData[0] = number - 1;
 		        sData[1] = number - 2;
 		        expect(arr[0]).toBe(number);
-		        expect(s.data()[0]).toBe(number);
+		        expect(bar.data()[0]).toBe(number);
 		        expect(arr[1]).not.toBeDefined();
-		        expect(s.data()[1]).not.toBeDefined();
-		        s.destroy();
+		        expect(bar.data()[1]).not.toBeDefined();
+		        bar.destroy();
 	        });
             it('should throw when call .data after .destroy', function () {
-	            var s = new Sandbox(name(), testData);
-	            s.destroy();
-                expect(s.data).toThrow();
+	            var bar = new Sandbox();
+	            bar.destroy();
+                expect(bar.data).toThrow();
             });
         });
         describe('sandbox children', function () {
-	        var parent, Father, Mother, Son, Daughter,
-		        names = ['Father', 'Mother', 'Son', 'Daughter'];
+	        var foo, bar, baz, qux;
 	        beforeEach(function () {
-		        parent = new Sandbox(parentName, testData);
-		        Father = parent.kid(names[0]);
-		        Mother = parent.kid(names[1]);
-		        Son = Father.kid(names[2]);
-		        Daughter = Father.kid(names[3]);
+		        foo = new Sandbox('foo');
+		        bar = foo.kid('bar');
+		        baz = bar.kid('baz');
+		        qux = baz.kid('qux');
 	        });
 	        afterEach(function () {
-		        parent.destroy();
+		        foo.destroy();
 	        });
 
             it('should be instance of Sandbox', function () {
-                _.each([Father, Mother, Son, Daughter], function (obj) {
+                _.each([bar, baz, qux], function (obj) {
 	                expect(obj).toEqual(jasmine.any(Sandbox));
                 });
             });
-            it('should throw if name is not unique', function () {
-                expect(function () {
-                    Father.kid(names[2]);
-                }).toThrow();
-	            expect(function () {
-		            new Sandbox(parentName); // jshint ignore:line
-	            }).toThrow();
-            });
-            it('should throw if name is same as parent/grand parent', function () {
-                expect(function () {
-	                Father.kid(names[0]);
-                }).toThrow();
-	            expect(function () {
-		            Father.kid(parentName);
-	            }).toThrow();
-            });
+	        it('should throw if siblings have same name', function () {
+		        expect(_.bind(foo.kid, foo, 'bar')).toThrow();
+	        });
 	        it('should destroy children recursively', function () {
-		        Father.destroy();
-		        expect(Father.data).toThrow();
-		        expect(Son.data).toThrow();
+		        foo.destroy();
+		        expect(bar.data).toThrow();
+		        expect(qux.data).toThrow();
 	        });
         });
 
@@ -140,7 +112,7 @@
 			});
 
 			it('should store events in a cache if no listeners existed yet', function (done) {
-				sandbox = new Sandbox(name(), undefined, {
+				sandbox = new Sandbox(false, undefined, {
 					cache: {
 						expire: 1000
 					}
@@ -167,7 +139,7 @@
 			});
 
 			it('should store events in a cache and expire after timeout', function (done) {
-				sandbox = new Sandbox(name(), undefined, {
+				sandbox = new Sandbox(false, undefined, {
 					cache: {
 						expire: 1000,
 						debounce: false
@@ -191,16 +163,15 @@
 		});
 
 		describe('sandbox permissions', function () {
-			var parent, Father, Mother, Son, Daughter, listener, listener2,
-				names = ['Father', 'Mother', 'Son', 'Daughter'];
+			var parent, Father, Mother, Son, Daughter, listener, listener2;
 			beforeEach(function () {
 				listener = jasmine.createSpy('listener');
 				listener2 = jasmine.createSpy('listener');
-				parent = new Sandbox(parentName, testData);
-				Father = parent.kid(names[0]);
-				Mother = parent.kid(names[1]);
-				Son = Father.kid(names[2]);
-				Daughter = Father.kid(names[3]);
+				parent = new Sandbox(false, testData);
+				Father = parent.kid();
+				Mother = parent.kid();
+				Son = Father.kid();
+				Daughter = Father.kid();
 			});
 			afterEach(function () {
 				parent.destroy();
