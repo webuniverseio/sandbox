@@ -168,11 +168,11 @@
 			beforeEach(function () {
 				listener = jasmine.createSpy('listener');
 				listener2 = jasmine.createSpy('listener');
-				parent = new Sandbox(false, testData);
-				Father = parent.kid();
-				Mother = parent.kid();
-				Son = Father.kid();
-				Daughter = Father.kid();
+				parent = new Sandbox(parentName, testData);
+				Father = parent.kid('Father');
+				Mother = parent.kid('Mother');
+				Son = Father.kid('Son');
+				Daughter = Father.kid('Daughter');
 			});
 			afterEach(function () {
 				parent.destroy();
