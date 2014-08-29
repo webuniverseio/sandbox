@@ -164,6 +164,7 @@
 
 		describe('sandbox permissions', function () {
 			var parent, Father, Mother, Son, Daughter, listener, listener2;
+			var parentName = 'Parent';
 			beforeEach(function () {
 				listener = jasmine.createSpy('listener');
 				listener2 = jasmine.createSpy('listener');
