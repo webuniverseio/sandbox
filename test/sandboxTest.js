@@ -8,7 +8,9 @@
                 b: 2
             };
 
-        describe('sandbox api', function (param) {
+		new Sandbox().
+
+        describe('sandbox api', function () {
 	        var foo;
 	        beforeEach(function () {
 		        foo = new Sandbox(false, testData);
@@ -253,7 +255,7 @@
 		 //subscribe parent to receive Father['someOtherEvent'] notifications
 		/*parent.grant({Father: ['someOtherEvent']});
 		Father.emit('someOtherEvent', 'parent will get that message from Father');
-		parent.emit('someOtherEvent', 'only parent will get that message, because Father wasn\'t subscribed
+		parent.emit('someOtherEvent', 'only parent will get that message, because Father wasn't subscribed
 		 to get messages from parent');
 		parent
 			.grant('Father', {parent: ['someOtherEvent']})

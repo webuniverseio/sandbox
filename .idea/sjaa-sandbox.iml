@@ -14,7 +14,6 @@
     <orderEntry type="library" name="requirejs-DefinitelyTyped" level="application" />
     <orderEntry type="library" name="lodash-DefinitelyTyped" level="application" />
     <orderEntry type="library" name="gruntjs-DefinitelyTyped" level="project" />
-    <orderEntry type="library" name="sjaa-sandbox node_modules" level="project" />
   </component>
 </module>
 

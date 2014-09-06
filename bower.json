@@ -19,6 +19,6 @@
   "private": false,
   "dependencies": {
     "lodash": "~2.4.1",
-    "simple-permissions": "~1.0.8"
+    "simple-permissions": "~2.0.0"
   }
 }
