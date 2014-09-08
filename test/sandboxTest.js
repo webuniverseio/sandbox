@@ -2,13 +2,11 @@
 (function () {
 	'use strict';
 	define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
-		var Sandbox = sandboxExport.Sandbox,
-            testData = {
+		var Sandbox = sandboxExport.Sandbox;
+		var testData = {
                 a: 1,
                 b: 2
             };
-
-		new Sandbox().
 
         describe('sandbox api', function () {
 	        var foo;
