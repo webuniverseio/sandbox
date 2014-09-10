@@ -16,18 +16,22 @@ for (var file in window.__karma__.files) {
 	}
 }
 
-requirejs.config({
-	// Karma serves files from '/base'
-	baseUrl: '/base/lib/',
+requirejs.config(
+	{
+		// Karma serves files from '/base'
+		baseUrl: '/base/lib/',
 
-	paths: {
-		'_': '../vendor/lodash/dist/lodash.compat',
-		'simple-permissions': '../vendor/simple-permissions/lib/simple-permissions'
-	},
+		paths: {
+			'_': '../vendor/lodash/dist/lodash.compat',
+			'simple-permissions': '../vendor/simple-permissions/lib/simple-permissions'
+		},
 
-	// ask Require.js to load these files (all our tests)
-	deps: dependencies,
+		urlArgs: 'bust=' + (new Date()).getTime(),
 
-	// start test run, once Require.js is done
-	callback: window.__karma__.start
-});
+		// ask Require.js to load these files (all our tests)
+		deps: dependencies,
+
+		// start test run, once Require.js is done
+		callback: window.__karma__.start
+	}
+);

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
+    <file url="file://$PROJECT_DIR$/karma.conf.js" libraries="{Node.js Globals}" />
     <file url="file://$PROJECT_DIR$/test/sandboxTest.js" libraries="{HTML, HTML5 / EcmaScript 5}" />
+    <file url="file://$PROJECT_DIR$/test/test-main.js" libraries="{HTML, HTML5 / EcmaScript 5}" />
     <file url="PROJECT" libraries="{jasmine-DefinitelyTyped, lodash-DefinitelyTyped, requirejs-DefinitelyTyped}" />
     <excludedPredefinedLibrary name="HTML" />
     <excludedPredefinedLibrary name="HTML5 / EcmaScript 5" />

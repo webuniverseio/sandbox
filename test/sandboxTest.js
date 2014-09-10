@@ -24,11 +24,14 @@
             });
 	        it('can have name', function () {
 		        var name = 'whoa';
-		        expect(new Sandbox(name).name()).toBe(name);
+		        var s = new Sandbox(name);
+		        expect(s.name()).toBe(name);
+		        s.destroy();
 	        });
             it('should store data', function () {
-	            var primitive = 5, bar;
-	            expect((bar = new Sandbox(false, primitive)).data()).toBe(primitive);
+	            var primitive = 5;
+	            var bar = new Sandbox(false, primitive);
+	            expect(bar.data()).toBe(primitive);
 	            bar.destroy();
 
 	            var arr = [10];
@@ -56,11 +59,12 @@
             it('should throw when call .data after .destroy', function () {
 	            var bar = new Sandbox();
 	            bar.destroy();
-                expect(bar.data).toThrow();
+                expect(_.bind(bar.data, bar)).toThrow();
             });
         });
         describe('sandbox children', function () {
-	        var foo, bar, baz, qux;
+	        var foo, bar, baz, qux,
+		        destroyedManually = false;
 	        beforeEach(function () {
 		        foo = new Sandbox('foo');
 		        bar = foo.kid('bar');
@@ -68,7 +72,12 @@
 		        qux = baz.kid('qux');
 	        });
 	        afterEach(function () {
-		        foo.destroy();
+		        if (!destroyedManually) {
+			        foo.destroy();
+			        bar.destroy();
+			        baz.destroy();
+			        qux.destroy();
+		        }
 	        });
 
             it('should be instance of Sandbox', function () {
@@ -80,9 +89,10 @@
 		        expect(_.bind(foo.kid, foo, 'bar')).toThrow();
 	        });
 	        it('should destroy children recursively', function () {
+		        destroyedManually = true;
 		        foo.destroy();
-		        expect(bar.data).toThrow();
-		        expect(qux.data).toThrow();
+		        expect(_.bind(bar.data, bar)).toThrow();
+		        expect(_.bind(qux.data, qux)).toThrow();
 	        });
         });
 
@@ -225,8 +235,8 @@
 				});
 				it('can get events with proper permissions', function () {
 					parent
-						.grant(Father.name, {Mother: ['ping']})
-						.grant(Mother.name, {Father: ['pong']});
+						.grant(Father.name(), {Mother: ['ping']})
+						.grant(Mother.name(), {Father: ['pong']});
 					Father.on('ping', listener);
 					Mother.on('pong', listener2);
 					Mother.emit('ping');
@@ -242,6 +252,7 @@
 					expect(listener.calls.count()).toBe(0);
 				});
 				it('can get events with proper permissions', function () {
+					//TODO: see if sandboxes get destroyed properly
 					parent
 						.grant({Father: ['ping']})
 						.on('ping', listener);
@@ -250,39 +261,5 @@
 				});
 			});
 		});
-		 //subscribe parent to receive Father['someOtherEvent'] notifications
-		/*parent.grant({Father: ['someOtherEvent']});
-		Father.emit('someOtherEvent', 'parent will get that message from Father');
-		parent.emit('someOtherEvent', 'only parent will get that message, because Father wasn't subscribed
-		 to get messages from parent');
-		parent
-			.grant('Father', {parent: ['someOtherEvent']})
-			.grant('Mother', {parent: ['someOtherEvent']})
-			//or parent.grant(['Father', 'Mother'], {parent: ['someOtherEvent']});
-			.emit('someOtherEvent', 'parent, Father and Mother will get that notification from parent');
-		parent
-			.off('someOtherEvent')
-			.reject('Father', {parent: ['someOtherEvent']})
-			.reject('Mother', {parent: ['someOtherEvent']})
-			//or parent.reject(['Father', 'Mother'], {parent: ['someOtherEvent']});
-			.emit('someOtherEvent', 'no one will get that message');
-
-		Son.emit('yetAnotherEvent', 'who do you think will get that message');
-		Daughter.emit('yetAnotherEvent', 'and who do you think will get that message');
-		Father
-			.grant({Son: ['yetAnotherEvent'], Daughter: ['yetAnotherEvent']})
-			//or Father.grant(['Son', 'Daughter'], {Father: ['yetAnotherEvent']})
-			.grant('Daughter', {Son: ['yetAnotherEvent'], Father: ['feedBackEvent']})
-			.grant('Son', {Daughter: ['yetAnotherEvent'], Father: ['feedBackEvent']});
-		Father.on('yetAnotherEvent', function (data) {
-			var kid = 'Son';
-			if (/^who/.test(data)) {
-				kid = 'Daughter';
-			}
-			Father.emit('feedBackEvent', 'Thank you ' + kid);
-		});
-		Son.on('feedBackEvent', function (data) {*//*got feedback*//*});
-		Daughter.on('feedBackEvent', function (data) {*//*got feedback*//*});
-		Father.reject(['Daughter', 'Son'], {Father: ['feedBackEvent']});*/
 	});
 }());
