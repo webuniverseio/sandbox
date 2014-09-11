@@ -8,6 +8,9 @@
                 b: 2
             };
 
+		//TODO: test defaults
+		//TODO: add context for listeners
+
         describe('sandbox api', function () {
 	        var foo;
 	        beforeEach(function () {
@@ -18,9 +21,23 @@
 	        });
 
             it('should have methods', function () {
-	            _.each(['kid', 'data', 'on', 'off', 'emit', 'grant', 'revoke', 'destroy', 'name'], function (method) {
-		            expect(foo[method]).toBeDefined();
-	            });
+	            _.each(
+		            [
+			            'kid',
+			            'data',
+			            'on',
+			            'off',
+			            'emit',
+			            'trigger',
+			            'grant',
+			            'revoke',
+			            'destroy',
+			            'name'
+		            ],
+		            function (method) {
+			            expect(foo[method]).toBeDefined();
+		            }
+	            );
             });
 	        it('can have name', function () {
 		        var name = 'whoa';
@@ -28,14 +45,15 @@
 		        expect(s.name()).toBe(name);
 		        s.destroy();
 	        });
-            it('should store data', function () {
+            it('can store data', function () {
 	            var primitive = 5;
 	            var bar = new Sandbox(false, primitive);
 	            expect(bar.data()).toBe(primitive);
 	            bar.destroy();
 
 	            var arr = [10];
-	            expect((bar = new Sandbox(false, arr)).data()).toEqual(jasmine.objectContaining(arr));
+	            bar = new Sandbox(false, arr);
+	            expect(bar.data()).toEqual(jasmine.objectContaining(arr));
 	            bar.destroy();
                 expect(foo.data()).toEqual(jasmine.objectContaining(testData));
             });
@@ -63,8 +81,7 @@
             });
         });
         describe('sandbox children', function () {
-	        var foo, bar, baz, qux,
-		        destroyedManually = false;
+	        var foo, bar, baz, qux;
 	        beforeEach(function () {
 		        foo = new Sandbox('foo');
 		        bar = foo.kid('bar');
@@ -72,12 +89,10 @@
 		        qux = baz.kid('qux');
 	        });
 	        afterEach(function () {
-		        if (!destroyedManually) {
-			        foo.destroy();
-			        bar.destroy();
-			        baz.destroy();
-			        qux.destroy();
-		        }
+		        foo.destroy();
+		        bar.destroy();
+		        baz.destroy();
+		        qux.destroy();
 	        });
 
             it('should be instance of Sandbox', function () {
@@ -88,20 +103,14 @@
 	        it('should throw if siblings have same name', function () {
 		        expect(_.bind(foo.kid, foo, 'bar')).toThrow();
 	        });
-	        it('should destroy children recursively', function () {
-		        destroyedManually = true;
-		        foo.destroy();
-		        expect(_.bind(bar.data, bar)).toThrow();
-		        expect(_.bind(qux.data, qux)).toThrow();
-	        });
         });
 
 		describe('sandbox events functionality', function () {
 			var listener, listener2, listener3,
 				sandbox,
 				data = [
-					'parent.on will get that',
-					'plus that'
+					'aaa',
+					'bbb'
 				],
 				originalTimeout;
 
@@ -186,6 +195,10 @@
 			});
 			afterEach(function () {
 				parent.destroy();
+				Father.destroy();
+				Mother.destroy();
+				Son.destroy();
+				Daughter.destroy();
 			});
 
 			describe('parent from itself', function() {
@@ -209,6 +222,22 @@
 				});
 			});
 
+			describe('when permissions granted and revoked right away', function() {
+				it('nothing should be called', function () {
+					var data = [
+						'parent.on will get that',
+						'plus that'
+					];
+					var event = 'someEvent';
+					parent
+						.grant(Father.name(), {Mother: [event]})
+						.revoke(Father.name(), {Mother: [event]});
+					Father.on(event, listener);
+					Mother.emit(event, data);
+					expect(listener.calls.count()).toEqual(0);
+				});
+			});
+
 			describe('kids from parents', function() {
 				it('can\'t get events', function () {
 					Father.on('ping', listener);
@@ -223,7 +252,8 @@
 					Mother.on('ping', listener);
 					parent
 						.emit('ping')
-						.revoke(['Father', 'Mother'], permissions);
+						.revoke(['Father', 'Mother'], permissions)
+						.emit('ping');
 					expect(listener.calls.count()).toBe(2);
 				});
 			});
@@ -241,6 +271,11 @@
 					Mother.on('pong', listener2);
 					Mother.emit('ping');
 					Father.emit('pong');
+					parent
+						.revoke(Father.name(), {Mother: ['ping']})
+						.revoke(Mother.name(), {Father: ['pong']});
+					Mother.emit('ping');
+					Father.emit('pong');
 					expect(listener.calls.count()).toBe(1);
 					expect(listener2.calls.count()).toBe(1);
 				});
@@ -252,10 +287,12 @@
 					expect(listener.calls.count()).toBe(0);
 				});
 				it('can get events with proper permissions', function () {
-					//TODO: see if sandboxes get destroyed properly
 					parent
 						.grant({Father: ['ping']})
 						.on('ping', listener);
+					Father.emit('ping');
+					parent
+						.revoke({Father: ['ping']});
 					Father.emit('ping');
 					expect(listener.calls.count()).toBe(1);
 				});

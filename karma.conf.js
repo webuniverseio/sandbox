@@ -1,12 +1,12 @@
 // Karma configuration
 // Generated on Fri Apr 11 2014 22:20:12 GMT-0400 (Eastern Daylight Time)
 //jshint strict: false
-module.exports = function (config) {
-	/** @namespace config.LOG_INFO */
+//noinspection GjsLint
+module.exports = function karmaExports(config) {
 	config.set({
 
 		// base path that will be used to resolve all patterns (eg. files, exclude)
-		basePath: '',
+		basePath: './',
 
 
 		// frameworks to use
@@ -25,7 +25,6 @@ module.exports = function (config) {
 
 		// list of files to exclude
 		exclude: [
-
 		],
 
 

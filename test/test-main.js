@@ -1,20 +1,27 @@
 /*global requirejs*/
+
 /**
  * @typedef {Object} __karma__
  * @property {Object} files
  */
+
 /**
  * @typedef {Object} requirejs
  * @property {Function} config
  */
+
 var dependencies = [];
-for (var file in window.__karma__.files) {
-	if (window.__karma__.files.hasOwnProperty(file)) {
+var files = window.__karma__.files;
+for (var file in files) {
+	if (files.hasOwnProperty(file)) {
+		files[file] += (new Date()).getTime();
 		if (/(Test)\.js$/.test(file)) {
 			dependencies.push(file);
 		}
 	}
 }
+
+
 
 requirejs.config(
 	{
@@ -25,8 +32,6 @@ requirejs.config(
 			'_': '../vendor/lodash/dist/lodash.compat',
 			'simple-permissions': '../vendor/simple-permissions/lib/simple-permissions'
 		},
-
-		urlArgs: 'bust=' + (new Date()).getTime(),
 
 		// ask Require.js to load these files (all our tests)
 		deps: dependencies,
