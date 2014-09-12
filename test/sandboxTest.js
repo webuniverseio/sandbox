@@ -1,4 +1,4 @@
-/*global describe, it, expect, beforeEach, afterEach, jasmine*/
+/*global describe, it, expect, beforeEach, afterEach, jasmine, spyOn*/
 (function () {
 	'use strict';
 	define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
@@ -7,9 +7,6 @@
                 a: 1,
                 b: 2
             };
-
-		//TODO: test defaults
-		//TODO: add context for listeners
 
         describe('sandbox api', function () {
 	        var foo;
@@ -39,6 +36,9 @@
 		            }
 	            );
             });
+	        it('should have static methods', function () {
+		        expect(Sandbox.defaults).toBeDefined();
+	        });
 	        it('can have name', function () {
 		        var name = 'whoa';
 		        var s = new Sandbox(name);
@@ -106,13 +106,13 @@
         });
 
 		describe('sandbox events functionality', function () {
-			var listener, listener2, listener3,
-				sandbox,
-				data = [
+			var listener, listener2, listener3;
+			var sandbox, sandbox2;
+			var data = [
 					'aaa',
 					'bbb'
-				],
-				originalTimeout;
+				];
+			var originalTimeout;
 
 			beforeEach(function() {
 				listener = jasmine.createSpy('listener');
@@ -127,9 +127,59 @@
 				jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
 				if (sandbox) {
 					sandbox.destroy();
+					sandbox = null;
+				}
+				if (sandbox2) {
+					sandbox2.destroy();
+					sandbox2 = null;
 				}
 			});
 
+			it('should call listener in bounded context', function () {
+				var test = {
+					value: 'abc',
+					getValue: function getValue() {
+						return this.value;
+					}
+				};
+				/**
+				 * @type {void|function}
+				 */
+				var testListener = spyOn(test, 'getValue').and.callThrough();
+				sandbox = new Sandbox();
+				sandbox
+					.on('someEvent', testListener, test)
+					.emit('someEvent');
+
+				expect(testListener.calls.all()[0].object).toBe(test);
+			});
+
+			it('cache settings could be adjusted through Sandbox.defaults', function (done) {
+				var defaults = _.cloneDeep(Sandbox.defaults());
+				Sandbox.defaults(
+					{
+						cache: {
+							expire: 1000
+						}
+					}
+				);
+				sandbox = new Sandbox();
+				sandbox.emit('someEvent', data);
+				setTimeout(function () {
+					//should wait for expire time
+					sandbox.on('someEvent', listener);
+					expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+				}, 750);
+
+				Sandbox.defaults(defaults);
+				sandbox2 = new Sandbox();
+				sandbox2.emit('someEvent', data);
+				setTimeout(function () {
+					sandbox2.on('someEvent', listener2);
+					expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
+					done();
+				}, 760);
+			});
 			it('should store events in a cache if no listeners existed yet', function (done) {
 				sandbox = new Sandbox(false, undefined, {
 					cache: {
