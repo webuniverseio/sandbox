@@ -11,7 +11,7 @@
         describe('sandbox api', function () {
 	        var foo;
 	        beforeEach(function () {
-		        foo = new Sandbox(false, testData);
+		        foo = new Sandbox(testData);
 	        });
 	        afterEach(function () {
 		        foo.destroy();
@@ -19,18 +19,7 @@
 
             it('should have methods', function () {
 	            _.each(
-		            [
-			            'kid',
-			            'data',
-			            'on',
-			            'off',
-			            'emit',
-			            'trigger',
-			            'grant',
-			            'revoke',
-			            'destroy',
-			            'name'
-		            ],
+		            ['kid', 'data', 'on', 'off', 'emit', 'trigger', 'grant', 'revoke', 'destroy', 'name'],
 		            function (method) {
 			            expect(foo[method]).toBeDefined();
 		            }
@@ -47,12 +36,12 @@
 	        });
             it('can store data', function () {
 	            var primitive = 5;
-	            var bar = new Sandbox(false, primitive);
+	            var bar = new Sandbox(primitive);
 	            expect(bar.data()).toBe(primitive);
 	            bar.destroy();
 
 	            var arr = [10];
-	            bar = new Sandbox(false, arr);
+	            bar = new Sandbox(arr);
 	            expect(bar.data()).toEqual(jasmine.objectContaining(arr));
 	            bar.destroy();
                 expect(foo.data()).toEqual(jasmine.objectContaining(testData));
@@ -64,7 +53,7 @@
 		        expect(foo.data().c).not.toBeDefined();
 		        var number = 20,
 		            arr = [number],
-			        bar = new Sandbox(false, arr),
+			        bar = new Sandbox(arr),
 			        sData = bar.data();
 		        sData[0] = number - 1;
 		        sData[1] = number - 2;
@@ -143,7 +132,7 @@
 					}
 				};
 				/**
-				 * @type {void|function}
+				 * @type {void|jasmine.Spy|function}
 				 */
 				var testListener = spyOn(test, 'getValue').and.callThrough();
 				sandbox = new Sandbox();
@@ -156,13 +145,11 @@
 
 			it('cache settings could be adjusted through Sandbox.defaults', function (done) {
 				var defaults = _.cloneDeep(Sandbox.defaults());
-				Sandbox.defaults(
-					{
-						cache: {
-							expire: 1000
-						}
+				Sandbox.defaults({
+					cache: {
+						expire: 1000
 					}
-				);
+				});
 				sandbox = new Sandbox();
 				sandbox.emit('someEvent', data);
 				setTimeout(function () {
@@ -181,7 +168,8 @@
 				}, 760);
 			});
 			it('should store events in a cache if no listeners existed yet', function (done) {
-				sandbox = new Sandbox(false, undefined, {
+				sandbox = new Sandbox();
+				sandbox.settings({
 					cache: {
 						expire: 1000
 					}
@@ -208,7 +196,8 @@
 			});
 
 			it('should store events in a cache and expire after timeout', function (done) {
-				sandbox = new Sandbox(false, undefined, {
+				sandbox = new Sandbox();
+				sandbox.settings({
 					cache: {
 						expire: 1000,
 						debounce: false
@@ -344,6 +333,22 @@
 					parent
 						.revoke({Father: ['ping']});
 					Father.emit('ping');
+					expect(listener.calls.count()).toBe(1);
+				});
+			});
+			describe('anonymous sandboxes', function() {
+				it('can setup permissions using .name()', function () {
+					var anonymous1 = new Sandbox();
+					var anonymous2 = anonymous1.kid();
+					var permissionsMap = {};
+					permissionsMap[anonymous2.name()] = ['ping'];
+					anonymous1
+						.grant(permissionsMap)
+						.on('ping', listener);
+					anonymous2.emit('ping');
+					anonymous1
+						.revoke(permissionsMap);
+					anonymous2.emit('ping');
 					expect(listener.calls.count()).toBe(1);
 				});
 			});
