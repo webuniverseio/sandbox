@@ -285,7 +285,7 @@
 				});
 				it('can get events with proper permissions', function () {
 					var permissions = {};
-					permissions[parentName] = ['ping'];
+					permissions[parent.name()] = ['ping'];
 					parent.grant(['Father', 'Mother'], permissions);
 					Father.on('ping', listener);
 					Mother.on('ping', listener);
