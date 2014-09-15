@@ -2,7 +2,7 @@
 module.exports = function spyOnKarma($) {
 	'use strict';
 
-	$.mapper = function (url) {
+	$.mapper = function mapUrlToConfig(url) {
 		if (~url.indexOf('lodash')) {
 			return {
 				instrument: false
@@ -13,8 +13,8 @@ module.exports = function spyOnKarma($) {
 			instrument: {
 				prettify: false,
 				objectDump: {
-					depth: 20,
-					propertyNumber: 10
+					depth: 10000,
+					propertyNumber: 10000
 				}
 			}
 		};

@@ -353,5 +353,42 @@
 				});
 			});
 		});
+		//TODO: report issue with number of functions tracked by spy-js
+		describe('sandbox permissions with events functionality', function () {
+			it('all listeners should be called', function(done) {
+				/**
+				 * @type {jasmine.Spy|Function}
+				 */
+				var listener = jasmine.createSpy('listener');
+				/**
+				 * @type {jasmine.Spy|Function}
+				 */
+				var listener2 = jasmine.createSpy('listener');
+				var anonymous1 = new Sandbox('1');
+				anonymous1.settings({
+					cache: {
+						expire: 200
+					}
+				});
+				var anonymous11 = anonymous1.kid('1.1');
+				var anonymous12 = anonymous1.kid('1.2');
+				var permissionsMap = {};
+				permissionsMap[anonymous1.name()] = ['ping'];
+
+				anonymous1.grant([anonymous11.name(), anonymous12.name()], permissionsMap);
+				anonymous11.on('ping', listener);
+				anonymous1.emit('ping');
+				setTimeout(function () {
+					anonymous12.on('ping', listener2);
+					expect(listener2.calls.count()).toBe(1);
+				}, 100);
+				setTimeout(function () {
+					anonymous1.revoke([anonymous12.name()], permissionsMap);
+					anonymous12.on('ping', listener2);
+					expect(listener2.calls.count()).toBe(1);
+				}, 250);
+				expect(listener.calls.count()).toBe(1);
+			});
+		});
 	});
 }());
