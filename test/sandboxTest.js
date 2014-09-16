@@ -378,6 +378,7 @@
 				anonymous1.grant([anonymous11.name(), anonymous12.name()], permissionsMap);
 				anonymous11.on('ping', listener);
 				anonymous1.emit('ping');
+				expect(listener.calls.count()).toBe(1);
 				setTimeout(function () {
 					anonymous12.on('ping', listener2);
 					expect(listener2.calls.count()).toBe(1);
@@ -386,8 +387,8 @@
 					anonymous1.revoke([anonymous12.name()], permissionsMap);
 					anonymous12.on('ping', listener2);
 					expect(listener2.calls.count()).toBe(1);
+					done();
 				}, 250);
-				expect(listener.calls.count()).toBe(1);
 			});
 		});
 	});
