@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
+    <file url="file://$PROJECT_DIR$/Gruntfile.js" libraries="{gruntjs-DefinitelyTyped}" />
     <file url="file://$PROJECT_DIR$/karma.conf.js" libraries="{Node.js Globals}" />
     <file url="file://$PROJECT_DIR$/spy.conf.js" libraries="{Node.js Globals}" />
     <file url="file://$PROJECT_DIR$/test/sandboxTest.js" libraries="{HTML, HTML5 / EcmaScript 5}" />

@@ -1,5 +1,6 @@
 /*global module:false*/
-module.exports = function (grunt) {
+//noinspection GjsLint
+module.exports = function initGrunt(grunt) {
 	'use strict';
 
 	// Project configuration.
@@ -35,36 +36,7 @@ module.exports = function (grunt) {
 		},
 		jshint: {
 			options: {
-				nonew: true,
-				curly: true,
-				latedef: 'nofunc',
-				noarg: true,
-				esnext: true,
-				trailing: true,
-				forin: true,
-				white: true,
-				noempty: true,
-				quotmark: true,
-				smarttabs: true,
-				node: true,
-				strict: true,
-				undef: true,
-				sub: true,
-				expr: true,
-				debug: true,
-				newcap: true,
-				immed: true,
-				browser: true,
-				es3: true,
-				devel: true,
-				camelcase: true,
-				multistr: true,
-				globals: {
-					describe: false,
-					it: false,
-					expect: false,
-					define: false
-				}
+				jshintrc: true
 			},
 			gruntfile: {
 				src: 'Gruntfile.js'

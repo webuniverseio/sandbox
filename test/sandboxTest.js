@@ -1,15 +1,14 @@
-/*global describe, it, expect, beforeEach, afterEach, jasmine, spyOn*/
 (function () {
 	'use strict';
 	define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 		var Sandbox = sandboxExport.Sandbox;
-		var testData = {
-                a: 1,
-                b: 2
-            };
 
-        describe('sandbox api', function () {
+        describe('sandbox base api', function () {
 	        var foo;
+	        var testData = {
+		        a: 1,
+		        b: 2
+	        };
 	        beforeEach(function () {
 		        foo = new Sandbox(testData);
 	        });
@@ -17,24 +16,33 @@
 		        foo.destroy();
 	        });
 
-            it('should have methods', function () {
+            it('instance should have methods', function () {
 	            _.each(
-		            ['kid', 'data', 'on', 'off', 'emit', 'trigger', 'grant', 'revoke', 'destroy', 'name'],
+		            ['kid', 'data', 'on', 'off', 'emit', 'trigger', 'grant', 'revoke', 'destroy', 'name', 'settings'],
 		            function (method) {
 			            expect(foo[method]).toBeDefined();
 		            }
 	            );
             });
+
 	        it('should have static methods', function () {
 		        expect(Sandbox.defaults).toBeDefined();
 	        });
-	        it('can have name', function () {
+
+	        it('always have name', function () {
 		        var name = 'whoa';
-		        var s = new Sandbox(name);
-		        expect(s.name()).toBe(name);
-		        s.destroy();
+		        var bar = new Sandbox(name);
+		        expect(bar.name()).toBe(name);
+		        bar.destroy();
+
+		        var baz = new Sandbox();
+		        expect(baz.name()).toBeDefined();
+		        baz.destroy();
 	        });
+
             it('can store data', function () {
+	            expect(foo.data()).toEqual(jasmine.objectContaining(testData));
+
 	            var primitive = 5;
 	            var bar = new Sandbox(primitive);
 	            expect(bar.data()).toBe(primitive);
@@ -44,13 +52,14 @@
 	            bar = new Sandbox(arr);
 	            expect(bar.data()).toEqual(jasmine.objectContaining(arr));
 	            bar.destroy();
-                expect(foo.data()).toEqual(jasmine.objectContaining(testData));
             });
+
 	        it('should check that data is immutable', function () {
 		        var data = foo.data();
 		        data.c = 10;
 		        expect(testData.c).not.toBeDefined();
 		        expect(foo.data().c).not.toBeDefined();
+
 		        var number = 20,
 		            arr = [number],
 			        bar = new Sandbox(arr),
@@ -63,12 +72,14 @@
 		        expect(bar.data()[1]).not.toBeDefined();
 		        bar.destroy();
 	        });
+
             it('should throw when call .data after .destroy', function () {
 	            var bar = new Sandbox();
 	            bar.destroy();
                 expect(_.bind(bar.data, bar)).toThrow();
             });
         });
+
         describe('sandbox children', function () {
 	        var foo, bar, baz, qux;
 	        beforeEach(function () {
@@ -89,24 +100,22 @@
 	                expect(obj).toEqual(jasmine.any(Sandbox));
                 });
             });
+
 	        it('should throw if siblings have same name', function () {
 		        expect(_.bind(foo.kid, foo, 'bar')).toThrow();
 	        });
         });
 
 		describe('sandbox events functionality', function () {
-			var listener, listener2, listener3;
-			var sandbox, sandbox2;
-			var data = [
-					'aaa',
-					'bbb'
-				];
+			/**
+			 * @type {jasmine.Spy|function}
+			 */
+			var listener;
+			var foo;
 			var originalTimeout;
 
 			beforeEach(function() {
 				listener = jasmine.createSpy('listener');
-				listener2 = jasmine.createSpy('listener2');
-				listener3 = jasmine.createSpy('listener3');
 
 				originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
 				jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -114,14 +123,15 @@
 
 			afterEach(function() {
 				jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-				if (sandbox) {
-					sandbox.destroy();
-					sandbox = null;
+				if (foo) {
+					foo.destroy();
+					foo = null;
 				}
-				if (sandbox2) {
-					sandbox2.destroy();
-					sandbox2 = null;
-				}
+			});
+
+			it('on is same as trigger', function () {
+				foo = new Sandbox();
+				expect(foo.emit).toBe(foo.trigger);
 			});
 
 			it('should call listener in bounded context', function () {
@@ -135,85 +145,183 @@
 				 * @type {void|jasmine.Spy|function}
 				 */
 				var testListener = spyOn(test, 'getValue').and.callThrough();
-				sandbox = new Sandbox();
-				sandbox
-					.on('someEvent', testListener, test)
-					.emit('someEvent');
+				foo = new Sandbox();
+				foo.on('someEvent', testListener, test);
+				foo.emit('someEvent');
 
 				expect(testListener.calls.all()[0].object).toBe(test);
 			});
 
-			it('cache settings could be adjusted through Sandbox.defaults', function (done) {
+			it('should unsubscribe listeners for given event', function () {
+				foo = new Sandbox();
+				foo.on('someEvent', listener);
+				foo.off('someEvent');
+				foo.emit('someEvent');
+
+				expect(listener.calls.count()).toBe(0);
+			});
+		});
+
+		describe('test defaults', function() {
+			/**
+			 * @type {jasmine.Spy|function}
+			 */
+			var listener;
+			/**
+			 * @type {jasmine.Spy|function}
+			 */
+			var listener2;
+			/**
+			 * @type {jasmine.Spy|function}
+			 */
+			var listener3;
+			var foo, bar;
+			var data = [
+				'aaa',
+				'bbb'
+			];
+			var originalTimeout;
+
+			beforeEach(function() {
+				listener = jasmine.createSpy('listener');
+				listener2 = jasmine.createSpy('listener2');
+				listener3 = jasmine.createSpy('listener3');
+
+				originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+				jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+			});
+
+			afterEach(function() {
+				jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+				if (foo) {
+					foo.destroy();
+					foo = null;
+				}
+				if (bar) {
+					bar.destroy();
+					bar = null;
+				}
+			});
+
+			it('should return an object', function() {
+				expect(Sandbox.defaults()).toEqual(jasmine.any(Object));
+			});
+
+			it('by default should store events in cache without expiration ' +
+			   'if listeners did not handle an event', function(done) {
+				bar = new Sandbox();
+				bar.emit('someEvent', data);
+				setTimeout(function () {
+					bar.on('someEvent', listener);
+					expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+				}, 1200);
+				setTimeout(function () {
+					bar.off('someEvent').on('someEvent', listener2);
+					expect(listener.calls.count()).toBe(1);
+					expect(listener2.calls.count()).toBe(1);
+					done();
+				}, 2000);
+			});
+
+			it('possible to overwrite instance defaults', function (done) {
+				bar = new Sandbox();
+				bar.settings({
+					cache: {
+						expire: 1000
+					}
+				});
+				bar.emit('someEvent', data);
+				setTimeout(function () {
+					bar.on('someEvent', listener);
+					expect(listener.calls.count()).toBe(0);
+					done();
+				}, 1200);
+			});
+
+			it('possible to setup event expiration', function (done) {
 				var defaults = _.cloneDeep(Sandbox.defaults());
 				Sandbox.defaults({
 					cache: {
 						expire: 1000
 					}
 				});
-				sandbox = new Sandbox();
-				sandbox.emit('someEvent', data);
+				foo = new Sandbox();
+				foo.emit('someEvent', data);
 				setTimeout(function () {
 					//should wait for expire time
-					sandbox.on('someEvent', listener);
+					foo.on('someEvent', listener);
 					expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+					done();
 				}, 750);
 
 				Sandbox.defaults(defaults);
-				sandbox2 = new Sandbox();
-				sandbox2.emit('someEvent', data);
-				setTimeout(function () {
-					sandbox2.on('someEvent', listener2);
-					expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
-					done();
-				}, 760);
 			});
-			it('should store events in a cache if no listeners existed yet', function (done) {
-				sandbox = new Sandbox();
-				sandbox.settings({
+
+			it('possible to set not to store events in cache', function(done) {
+				var defaults = _.cloneDeep(Sandbox.defaults());
+				Sandbox.defaults({
+					cache: {
+						store: false,
+						expire: 2000
+					}
+				});
+				bar = new Sandbox();
+				bar.emit('someEvent', data);
+				setTimeout(function () {
+					bar.on('someEvent', listener);
+					expect(listener.calls.count()).toBe(0);
+					done();
+				}, 1200);
+				Sandbox.defaults(defaults);
+			});
+
+			it('debounce event expiration by default', function (done) {
+				foo = new Sandbox();
+				foo.settings({
 					cache: {
 						expire: 1000
 					}
 				});
-				sandbox.emit('someEvent', data);
-				sandbox.on('someEvent', listener);
+				foo.emit('someEvent', data);
+				foo.on('someEvent', listener);
 				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
 				setTimeout(function () {
 					//should wait for expire time
-					sandbox.on('someEvent', listener2);
+					foo.on('someEvent', listener2);
 					expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
 				}, 750);
 				setTimeout(function () {
 					//because it works as debounce by default
-					sandbox.on('someEvent', listener2);
+					foo.on('someEvent', listener2);
 					expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
 				}, 1500);
 				setTimeout(function () {
-				    //expired
-					sandbox.on('someEvent', listener3);
+					//expired
+					foo.on('someEvent', listener3);
 					expect(listener3).not.toHaveBeenCalled();
 					done();
 				}, 3000);
 			});
 
 			it('should store events in a cache and expire after timeout', function (done) {
-				sandbox = new Sandbox();
-				sandbox.settings({
+				foo = new Sandbox();
+				foo.settings({
 					cache: {
 						expire: 1000,
 						debounce: false
 					}
 				});
-				sandbox.emit('someEvent', data);
-				sandbox.on('someEvent', listener);
+				foo.emit('someEvent', data);
+				foo.on('someEvent', listener);
 				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
 				setTimeout(function () {
 					//should wait for expire time
-					sandbox.on('someEvent', listener2);
+					foo.on('someEvent', listener2);
 					expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
 				}, 750);
 				setTimeout(function () {
 					//because it works as debounce by default
-					sandbox.on('someEvent', listener2);
+					foo.on('someEvent', listener2);
 					expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
 					done();
 				}, 1500);
@@ -221,6 +329,10 @@
 		});
 
 		describe('sandbox permissions', function () {
+			var testData = {
+				a: 1,
+				b: 2
+			};
 			var parent, Father, Mother, Son, Daughter, listener, listener2;
 			var parentName = 'Parent';
 			beforeEach(function () {
@@ -268,9 +380,8 @@
 						'plus that'
 					];
 					var event = 'someEvent';
-					parent
-						.grant(Father.name(), {Mother: [event]})
-						.revoke(Father.name(), {Mother: [event]});
+					parent.grant(Father.name(), {Mother: [event]});
+					parent.revoke(Father.name(), {Mother: [event]});
 					Father.on(event, listener);
 					Mother.emit(event, data);
 					expect(listener.calls.count()).toEqual(0);
@@ -283,6 +394,7 @@
 					parent.emit('ping');
 					expect(listener.calls.count()).toBe(0);
 				});
+
 				it('can get events with proper permissions', function () {
 					var permissions = {};
 					permissions[parent.name()] = ['ping'];
@@ -296,12 +408,14 @@
 					expect(listener.calls.count()).toBe(2);
 				});
 			});
+
 			describe('kids from kids', function() {
 				it('can\'t get events', function () {
 					Father.on('ping', listener);
 					Mother.emit('ping');
 					expect(listener.calls.count()).toBe(0);
 				});
+
 				it('can get events with proper permissions', function () {
 					parent
 						.grant(Father.name(), {Mother: ['ping']})
@@ -319,12 +433,14 @@
 					expect(listener2.calls.count()).toBe(1);
 				});
 			});
+
 			describe('parent from kids', function() {
 				it('can\'t get events', function () {
 					Father.on('ping', listener);
 					Son.emit('ping');
 					expect(listener.calls.count()).toBe(0);
 				});
+
 				it('can get events with proper permissions', function () {
 					parent
 						.grant({Father: ['ping']})
@@ -336,6 +452,7 @@
 					expect(listener.calls.count()).toBe(1);
 				});
 			});
+
 			describe('anonymous sandboxes', function() {
 				it('can setup permissions using .name()', function () {
 					var anonymous1 = new Sandbox();
@@ -354,7 +471,7 @@
 			});
 		});
 		//TODO: report issue with number of functions tracked by spy-js
-		describe('sandbox permissions with events functionality', function () {
+		describe('all together', function () {
 			it('all listeners should be called', function(done) {
 				/**
 				 * @type {jasmine.Spy|Function}
