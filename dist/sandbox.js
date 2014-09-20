@@ -1,3 +1,10 @@
+/*! sandbox - v0.0.0 - 2014-09-19
+* https://github.com/szarouski/sandbox
+ Licensed http://unlicense.org/
+* Description Sandbox with hierarchical support of event management
+* Author Sergey Zarouski, http://webuniverse.club
+*/
+
 //TODO: look at closure compiler minifier
 //TODO: add a way to plug-in
 //TODO: most likely need namespaces
@@ -215,7 +222,7 @@
 	     * @param {Object.<String, String[]>} permissionsMap permissions map
 	     */
 	    Sandbox.prototype.grant = _.partialRight(updatePermissions, function (data, prefix, permissionsMap) {
-		    validateTypesInPrivateCode(permissionsMap, _.isObject, 'permissionsMap should be an object');
+		    privateCodeTypeValidation(permissionsMap, _.isObject, 'permissionsMap should be an object');
 
 		    simplePermissions.grant(data.permissions, prefix, permissionsMap);
 	    });
@@ -225,7 +232,7 @@
 	     * @param {Object.<String, String[]>} permissionsMap permissions map
 	     */
 	    Sandbox.prototype.revoke = _.partialRight(updatePermissions, function (data, prefix, permissionsMap) {
-		    validateTypesInPrivateCode(permissionsMap, _.isObject, 'permissionsMap should be an object');
+		    privateCodeTypeValidation(permissionsMap, _.isObject, 'permissionsMap should be an object');
 
 		    simplePermissions.revoke(data.permissions, prefix, permissionsMap);
 		    _.remove(data.cache, function (/**CachedEvent*/cachedEvent) {
@@ -291,7 +298,7 @@
 	     * @param {Sandbox} parent
 	     */
 	    function setCurrentParent(parent) {
-		    validateTypesInPrivateCode(parent, isSandbox, 'parent should be an instance of Sandbox');
+		    privateCodeTypeValidation(parent, isSandbox, 'parent should be an instance of Sandbox');
 
 		    tempParent = parent;
 	    }
@@ -314,7 +321,7 @@
 	     * @param {{name: String, prefix: String, childrenPrefix: string, parentInfo: ?SandboxInfo, data: *}} params
 	     */
 	    function SandboxInfo(params) {
-		    validateTypesInPrivateCode(
+		    privateCodeTypeValidation(
 			    params,
 			    function validateParams(value) {
 				    return _.isObject(value) && _.isString(value.name) &&
@@ -352,7 +359,7 @@
 	     * @param {Number} index
 	     */
 	    SandboxInfo.prototype.mapTo = function assignSandboxInfoTo(index) {
-		    validateTypesInPrivateCode(index, _.isNumber, 'index should be a number');
+		    privateCodeTypeValidation(index, _.isNumber, 'index should be a number');
 
 		    sandboxInfoStorage[index] = this;
 	    };
@@ -361,7 +368,7 @@
 	     * @param {Number} index
 	     */
 	    SandboxInfo.prototype.unMapFrom = function unAssignSandboxInfoFrom(index) {
-		    validateTypesInPrivateCode(index, _.isNumber, 'index should be a number');
+		    privateCodeTypeValidation(index, _.isNumber, 'index should be a number');
 
 		    sandboxInfoStorage.splice(index, 1);
 	    };
@@ -385,8 +392,8 @@
 	     * @throws SandboxError
 	     */
 	    function makeSureSiblingsNamesAreUnique(prefix, name) {
-		    validateTypesInPrivateCode(prefix, _.isString, 'prefix should be a string');
-		    validateTypesInPrivateCode(name, _.isString, 'name should be a string');
+		    privateCodeTypeValidation(prefix, _.isString, 'prefix should be a string');
+		    privateCodeTypeValidation(name, _.isString, 'name should be a string');
 		    if (prefix in privateDataStorage) {
 			    throw new SandboxError(
 				    [
@@ -421,7 +428,7 @@
 	     * @param {String} prefix
 	     */
 	    PrivateData.prototype.mapTo = function mapTo(prefix) {
-		    validateTypesInPrivateCode(prefix, _.isString, 'prefix should be a string');
+		    privateCodeTypeValidation(prefix, _.isString, 'prefix should be a string');
 		    privateDataStorage[prefix] = this;
 	    };
 	    /**
@@ -429,7 +436,7 @@
 	     * @param {String} prefix
 	     */
 	    PrivateData.prototype.unMapFrom = function unMapPrivateDataFrom(prefix) {
-		    validateTypesInPrivateCode(prefix, _.isString, 'prefix should be a string');
+		    privateCodeTypeValidation(prefix, _.isString, 'prefix should be a string');
 		    delete privateDataStorage[prefix];
 	    };
 	    /**
@@ -437,7 +444,7 @@
 	     * @param {CachedEvent} event
 	     */
 	    PrivateData.prototype.addToCache = function addToPrivateDataCache(event) {
-		    validateTypesInPrivateCode(event, isCachedEvent, 'event should be an instance of CachedEvent');
+		    privateCodeTypeValidation(event, isCachedEvent, 'event should be an instance of CachedEvent');
 		    this.cache.push(event);
 
 		    if (event.settings.expire) {
@@ -717,7 +724,7 @@
 	     * @param {String} errorMessage
 	     * @throws SandboxError
 	     */
-	    var validateTypesInPrivateCode = function validateTypesInPrivateCode(value, validator, errorMessage) {
+	    var privateCodeTypeValidation = function privateCodeTypeValidation(value, validator, errorMessage) {
 		    if (typeof IgnorePrivateSandboxValidation !== 'undefined' && !IgnorePrivateSandboxValidation) {
 			    validateTypes.apply(null, arguments);
 		    }

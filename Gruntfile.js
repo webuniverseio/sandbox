@@ -27,7 +27,16 @@ module.exports = function initGrunt(grunt) {
 		},
 		uglify: {
 			options: {
-				banner: '<%= banner %>'
+				banner: '<%= banner %>',
+				compress: {
+					'global_defs': {
+						IgnorePrivateSandboxValidation: true
+					},
+					'dead_code': true
+				},
+				beautify: true,
+				sequences: false,
+				mangle: false
 			},
 			dist: {
 				src: '<%= concat.dist.dest %>',

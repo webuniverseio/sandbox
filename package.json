@@ -1,5 +1,5 @@
 {
-	"name": "Sandbox",
+	"name": "sandbox",
 	"version": "0.0.0",
 	"description": "Sandbox with hierarchical support of event management",
 	"main": "lib/sandbox.js",
