@@ -29,11 +29,9 @@ module.exports = function initGrunt(grunt) {
 			options: {
 				banner: '<%= banner %>',
 				compress: {
-					'global_defs': {
-						IgnorePrivateSandboxValidation: true
-					},
-					'dead_code': true
+					'pure_funcs': ['validateTypesInPrivateCode']
 				},
+				//TODO: add optimizations
 				beautify: true,
 				sequences: false,
 				mangle: false
