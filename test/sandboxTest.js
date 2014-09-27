@@ -478,7 +478,6 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 			});
 		});
 	});
-	//TODO: report issue with number of functions tracked by spy-js
 	describe('all together', function () {
 		it('all listeners should be called', function(done) {
 			/**

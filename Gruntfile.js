@@ -27,14 +27,10 @@ module.exports = function initGrunt(grunt) {
 		},
 		uglify: {
 			options: {
-				banner: '<%= banner %>',
+				banner: '<%= banner %>'/*,
 				compress: {
 					'pure_funcs': ['validateTypesInPrivateCode']
-				},
-				//TODO: add optimizations
-				beautify: true,
-				sequences: false,
-				mangle: false
+				}*/
 			},
 			dist: {
 				src: '<%= concat.dist.dest %>',
