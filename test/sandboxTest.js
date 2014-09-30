@@ -168,6 +168,15 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 
 			expect(listener.calls.count()).toBe(0);
 		});
+
+		it('should unsubscribe listeners for given event', function () {
+			foo = new Sandbox();
+			foo.on('someEvent', listener);
+			foo.off('someEvent');
+			foo.emit('someEvent');
+
+			expect(listener.calls.count()).toBe(0);
+		});
 	});
 
 	describe('test defaults', function() {
@@ -218,10 +227,15 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 		it('by default should store events in cache without expiration ' +
 		   'if listeners did not handle an event', function(done) {
 			bar = new Sandbox();
-			bar.emit('someEvent', data);
+			var eventName = 'someEvent';
+			bar.emit(eventName, data);
 			setTimeout(function () {
-				bar.on('someEvent', listener);
-				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+				bar.on(eventName, listener);
+				expect(listener.calls.count()).toBe(1);
+				var mostRecentCall = listener.calls.mostRecent();
+				expect(mostRecentCall.args[0].event).toBe(eventName);
+				expect(mostRecentCall.args[1]).toBe(data[0]);
+				expect(mostRecentCall.args[2]).toBe(data[1]);
 			}, 1200);
 			setTimeout(function () {
 				bar.off('someEvent').on('someEvent', listener2);
@@ -254,11 +268,15 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 				}
 			});
 			foo = new Sandbox();
-			foo.emit('someEvent', data);
+			var eventName = 'someEvent';
+			foo.emit(eventName, data);
 			setTimeout(function () {
 				//should wait for expire time
-				foo.on('someEvent', listener);
-				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+				foo.on(eventName, listener);
+				expect(listener.calls.count()).toBe(1);
+				var mostRecent = listener.calls.mostRecent();
+				expect(mostRecent.args[1]).toBe(data[0]);
+				expect(mostRecent.args[2]).toBe(data[1]);
 				done();
 			}, 750);
 
@@ -290,23 +308,30 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 					expire: 1000
 				}
 			});
-			foo.emit('someEvent', data);
-			foo.on('someEvent', listener);
-			expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+			var eventName = 'someEvent';
+			foo.emit(eventName, data);
+			foo.on(eventName, listener);
+			expect(listener.calls.count()).toBe(1);
+			var mostRecent = listener.calls.mostRecent();
+			expect(mostRecent.args[1]).toBe(data[0]);
+			expect(mostRecent.args[2]).toBe(data[1]);
 			setTimeout(function () {
 				//should wait for expire time
-				foo.on('someEvent', listener2);
-				expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
+				foo.on(eventName, listener2);
+				expect(listener2.calls.count()).toBe(1);
+				mostRecent = listener2.calls.mostRecent();
+				expect(mostRecent.args[1]).toBe(data[0]);
+				expect(mostRecent.args[2]).toBe(data[1]);
 			}, 750);
 			setTimeout(function () {
 				//because it works as debounce by default
-				foo.on('someEvent', listener2);
-				expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
+				foo.on(eventName, listener3);
+				expect(listener3.calls.count()).toBe(1);
 			}, 1500);
 			setTimeout(function () {
 				//expired
-				foo.on('someEvent', listener3);
-				expect(listener3).not.toHaveBeenCalled();
+				foo.on(eventName, listener3);
+				expect(listener3.calls.count()).toBe(1);
 				done();
 			}, 3000);
 		});
@@ -321,16 +346,16 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 			});
 			foo.emit('someEvent', data);
 			foo.on('someEvent', listener);
-			expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+			expect(listener.calls.count()).toBe(1);
 			setTimeout(function () {
 				//should wait for expire time
 				foo.on('someEvent', listener2);
-				expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
+				expect(listener2.calls.count()).toBe(1);
 			}, 750);
 			setTimeout(function () {
-				//because it works as debounce by default
+				//expired
 				foo.on('someEvent', listener2);
-				expect(listener2).toHaveBeenCalledWith(data[0], data[1]);
+				expect(listener2.calls.count()).toBe(1);
 				done();
 			}, 1500);
 		});
@@ -369,11 +394,11 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 				parent.on('someEvent', listener);
 				expect(listener).not.toHaveBeenCalled();
 				parent.emit('someEvent', data);
-				expect(listener).toHaveBeenCalledWith(data[0], data[1]);
+				expect(listener.calls.count()).toBe(1);
 				parent.on('someEvent', listener2);
 				parent.emit('someEvent', data[0]);
-				expect(listener).toHaveBeenCalledWith(data[0]);
-				expect(listener2).toHaveBeenCalledWith(data[0]);
+				expect(listener.calls.count()).toBe(2);
+				expect(listener2.calls.count()).toBe(1);
 				parent.off('someEvent');
 				parent.emit('someEvent', data);
 				expect(listener.calls.count()).toEqual(2);
