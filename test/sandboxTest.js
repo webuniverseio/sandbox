@@ -492,14 +492,36 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 				var anonymous2 = anonymous1.kid();
 				var permissionsMap = {};
 				permissionsMap[anonymous2.name()] = ['ping'];
-				anonymous1
-					.grant(permissionsMap)
-					.on('ping', listener);
+				anonymous1.grant(permissionsMap);
+				anonymous1.on('ping', listener);
 				anonymous2.emit('ping');
-				anonymous1
-					.revoke(permissionsMap);
+				anonymous1.revoke(permissionsMap);
 				anonymous2.emit('ping');
 				expect(listener.calls.count()).toBe(1);
+				anonymous1.destroy();
+				anonymous2.destroy();
+			});
+		});
+
+		describe('grant/revoke permissions to/from all', function() {
+			it('can grant permissions to all', function () {
+				var eventName = 'someEvent';
+				parent.grant('*', {Father: [eventName]});
+				parent.on(eventName, listener);
+				Son.on(eventName, listener2);
+				Father.emit(eventName);
+				expect(listener.calls.count()).toBe(1);
+				expect(listener2.calls.count()).toBe(1);
+			});
+			it('can revoke permissions from all', function () {
+				var eventName = 'someEvent';
+				parent.grant('*', {Father: [eventName]});
+				parent.revoke('*', {Father: [eventName]});
+				parent.on(eventName, listener);
+				Son.on(eventName, listener2);
+				Father.emit(eventName);
+				expect(listener.calls.count()).toBe(0);
+				expect(listener2.calls.count()).toBe(0);
 			});
 		});
 	});
@@ -536,6 +558,9 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 				anonymous1.revoke([anonymous12.name()], permissionsMap);
 				anonymous12.on('ping', listener2);
 				expect(listener2.calls.count()).toBe(1);
+				anonymous1.destroy();
+				anonymous11.destroy();
+				anonymous12.destroy();
 				done();
 			}, 250);
 		});
