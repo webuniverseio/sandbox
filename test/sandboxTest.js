@@ -502,28 +502,6 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 				anonymous2.destroy();
 			});
 		});
-
-		describe('grant/revoke permissions to/from all', function() {
-			it('can grant permissions to all', function () {
-				var eventName = 'someEvent';
-				parent.grant('*', {Father: [eventName]});
-				parent.on(eventName, listener);
-				Son.on(eventName, listener2);
-				Father.emit(eventName);
-				expect(listener.calls.count()).toBe(1);
-				expect(listener2.calls.count()).toBe(1);
-			});
-			it('can revoke permissions from all', function () {
-				var eventName = 'someEvent';
-				parent.grant('*', {Father: [eventName]});
-				parent.revoke('*', {Father: [eventName]});
-				parent.on(eventName, listener);
-				Son.on(eventName, listener2);
-				Father.emit(eventName);
-				expect(listener.calls.count()).toBe(0);
-				expect(listener2.calls.count()).toBe(0);
-			});
-		});
 	});
 	describe('all together', function () {
 		it('all listeners should be called', function(done) {
