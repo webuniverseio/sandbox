@@ -1,5 +1,5 @@
-/*global requirejs*/
-
+/*global requirejs, __karma__*/
+//jshint node:true
 /**
  * @typedef {Object} __karma__
  * @property {Object} files
@@ -10,33 +10,43 @@
  * @property {Function} config
  */
 
-var dependencies = [];
-var files = window.__karma__.files;
-for (var file in files) {
-	if (files.hasOwnProperty(file)) {
-		files[file] += (new Date()).getTime();
-		if (/(Test)\.js$/.test(file)) {
-			dependencies.push(file);
+var environment = typeof window === 'object' ? 'browser' : 'node',
+	projectMainFolder = 'lib/',
+	paths = {
+		'simple-permissions': '../vendor/simple-permissions/lib/simple-permissions'
+	},
+	dependencies = [];
+if (environment === 'browser') {
+	var files = window.__karma__.files;
+	for (var file in files) {
+		if (files.hasOwnProperty(file)) {
+			files[file] += (new Date()).getTime();
+			if (/(Test)\.js$/.test(file)) {
+				dependencies.push(file);
+			}
 		}
 	}
-}
 
 
+	paths._ = '../vendor/lodash/dist/lodash.compat';
 
-requirejs.config(
-	{
+
+	requirejs.config({
 		// Karma serves files from '/base'
-		baseUrl: '/base/lib/',
+		baseUrl: '/base/' + projectMainFolder,
 
-		paths: {
-			'_': '../vendor/lodash/dist/lodash.compat',
-			'simple-permissions': '../vendor/simple-permissions/lib/simple-permissions'
-		},
+		paths: paths,
 
 		// ask Require.js to load these files (all our tests)
 		deps: dependencies,
 
 		// start test run, once Require.js is done
 		callback: window.__karma__.start
-	}
-);
+	});
+} else {
+	paths._ = 'lodash-node';
+	module.exports = {
+		projectMainFolder: projectMainFolder,
+		paths: paths
+	};
+}
