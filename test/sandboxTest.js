@@ -1,6 +1,6 @@
-define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
+define(['sandbox', '_'], function (/** SandboxExports */sandbox, _) {
 	'use strict';
-	var Sandbox = sandboxExport.Sandbox;
+	var Sandbox = sandbox.constructor;
 	//var SandboxError = sandboxExport.SandboxError;
 
     describe('sandbox base api', function () {
@@ -503,6 +503,52 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 			});
 		});
 	});
+	describe('asynchronous execution', function () {
+		var parentName = 'Parent';
+		var testData = {x: 1, y: 2};
+		var parent, Father, Mother, Son, Daughter, listener, listener2;
+		beforeEach(function () {
+			/**
+			 * @type {jasmine.Spy|Function}
+			 */
+			listener = jasmine.createSpy('listener');
+			/**
+			 * @type {jasmine.Spy|Function}
+			 */
+			listener2 = jasmine.createSpy('listener');
+			parent = new Sandbox(parentName);
+		});
+		afterEach(function () {
+			parent.destroy();
+			Father.destroy();
+			Mother.destroy();
+		});
+
+		it('should execute listener', function (done) {
+			parent.grant('Mother', {Father: ['data']});
+			setTimeout(function () {
+				Father = parent.kid('Father');
+				Father.emit('data', testData);
+			}, 100);
+			setTimeout(function () {
+				Mother = parent.kid('Mother');
+				Mother.on('data', listener);
+				expect(listener.calls.argsFor(0)[1]).toBe(testData);
+				Mother.grant(['Daughter', 'Son'], {Mother: ['kiss']});
+				//Son was behaving bad, and will not get a kiss :(
+				Mother.revoke('Son', {Mother: ['kiss']});
+				Mother.emit('kiss');
+				setTimeout(function () {
+					Son = Mother.kid('Son');
+					Daughter = Mother.kid('Daughter');
+					Son.on('kiss', listener2);
+					Daughter.on('kiss', listener2);
+					expect(listener2.calls.count()).toBe(1);
+					done();
+				}, 200);
+			}, 200);
+		});
+	});
 	describe('all together', function () {
 		it('all listeners should be called', function(done) {
 			/**
@@ -520,11 +566,11 @@ define(['sandbox', '_'], function (/** SandboxExports */sandboxExport, _) {
 				}
 			});
 			var anonymous11 = anonymous1.kid('1.1');
-			var anonymous12 = anonymous1.kid('1.2');
-			var permissionsMap = {};
-			permissionsMap[anonymous1.name()] = ['ping'];
+			var anonymous12Name = '1.2';
+			var permissionsMap = _.object([anonymous1.name()], [['ping']]);
+			anonymous1.grant([anonymous11.name(), anonymous12Name], permissionsMap);
+			var anonymous12 = anonymous1.kid(anonymous12Name);
 
-			anonymous1.grant([anonymous11.name(), anonymous12.name()], permissionsMap);
 			anonymous11.on('ping', listener);
 			anonymous1.emit('ping');
 			expect(listener.calls.count()).toBe(1);
