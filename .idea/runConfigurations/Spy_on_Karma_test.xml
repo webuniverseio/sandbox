@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Spy on Karma test" type="JavaScriptTraceType" factoryName="Spy-js" node="C:/Program Files/nodejs/node.exe" config="$PROJECT_DIR$/spy.conf.js" has-config="true" system-proxy="true" proxy-port="3546">
+    <RunnerSettings RunnerId="JavaScriptTraceRunner" />
+    <ConfigurationWrapper RunnerId="JavaScriptTraceRunner" />
+    <method />
+  </configuration>
+</component>

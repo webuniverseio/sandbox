@@ -1,23 +1,23 @@
-/*! sandbox - v0.0.0 - 2014-10-13
+/*! sandbox - v1.0.0 - 2014-10-30
 * https://github.com/szarouski/sandbox
  Licensed http://unlicense.org/
-* Description Sandbox with hierarchical support of event management
+* Description Sandbox for scalable javascript applications
 * Author Sergey Zarouski, http://webuniverse.club
 */
 
 //TODO: look at closure compiler minifier
 //TODO: add a way to plug-in in next major version
-//TODO: think about a way to use regex in grant/revoke
 
 //noinspection ThisExpressionReferencesGlobalObjectJS,FunctionTooLongJS
 (function (root, factory) {
 	//jshint maxcomplexity: false
 	'use strict';
+	var isNode = typeof window !== 'object';
 	if (typeof define === 'function' && define.amd) {
 		define(['exports', '_', 'simple-permissions'], factory);
 	} else if (typeof exports === 'object') {
 		//noinspection JSCheckFunctionSignatures
-		factory(exports, require('_', 'simple-permissions'));
+		factory(exports, require(isNode ? 'lodash-node' : '_'), require('simple-permissions'));
 	} else {
 		var rootExports = root.exports || (root.exports = {});
 		//noinspection JSUnresolvedVariable

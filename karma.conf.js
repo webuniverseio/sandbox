@@ -66,6 +66,10 @@ module.exports = function karmaExports(config) {
 		browsers: ['ChromeCanary', 'Chrome', 'Firefox', 'IE'],
 
 		customLaunchers: {
+			IE10: {
+				base: 'IE',
+				'x-ua-compatible': 'IE=EmulateIE10'
+			},
 			IE9: {
 				base: 'IE',
 				'x-ua-compatible': 'IE=EmulateIE9'

@@ -1,7 +1,7 @@
 {
   "name": "sandbox",
-  "version": "0.0.0",
-  "description": "Sandbox with hierarchical support of event management",
+  "version": "1.0.0",
+  "description": "Sandbox for scalable javascript applications",
   "main": "lib/sandbox.js",
   "directories": {
     "test": "test"

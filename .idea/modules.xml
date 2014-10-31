@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/sjaa-sandbox.iml" filepath="$PROJECT_DIR$/.idea/sjaa-sandbox.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/sandbox.iml" filepath="$PROJECT_DIR$/.idea/sandbox.iml" />
     </modules>
   </component>
 </project>
-
