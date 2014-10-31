@@ -1,6 +1,6 @@
 {
   "name": "sandbox",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sandbox for scalable javascript applications",
   "main": "lib/sandbox.js",
   "directories": {

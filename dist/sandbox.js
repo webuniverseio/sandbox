@@ -1,4 +1,4 @@
-/*! sandbox - v1.0.0 - 2014-10-30
+/*! sandbox - v1.0.1 - 2014-10-31
 * https://github.com/szarouski/sandbox
  Licensed http://unlicense.org/
 * Description Sandbox for scalable javascript applications
@@ -207,7 +207,7 @@
 
 			var cachedEvent = new CachedEvent({
 				origin: info.prefix,
-				event: eventName,
+				type: eventName,
 				data: data,
 				invalidate: false,
 				settings: info.settings.cache
@@ -295,7 +295,7 @@
 			simplePermissions.revoke(data.permissions, prefix, permissionsMap);
 			_.remove(data.cache, function (/**CachedEvent*/cachedEvent) {
 			    return cachedEvent.origin in permissionsMap &&
-					~_.indexOf(permissionsMap[cachedEvent.origin], cachedEvent.event);
+					~_.indexOf(permissionsMap[cachedEvent.origin], cachedEvent.type);
 			});
 		});
 		/**
@@ -571,7 +571,7 @@
 		SandboxListener.process = function processSandboxListener(listener, candidateData, candidatePrefix) {
 			var storedCandidates = this;
 			var privateData = storedCandidates.getForSandbox(listener.prefix);
-			var candidateCachedEvents = _.filter(candidateData.cache, {event: listener.event});
+			var candidateCachedEvents = _.filter(candidateData.cache, {type: listener.event});
 
 			_.each(candidateCachedEvents, _.partial(SandboxListener.callEventListeners, privateData.listeners));
 		};
@@ -668,12 +668,12 @@
 
 		/**
 		 * @class CachedEvent
-		 * @param {{event: String, data: *, invalidate: boolean,
+		 * @param {{type: String, data: *, invalidate: boolean,
 	     * settings: CacheSettings}} params
 		 */
 		function CachedEvent(params) {
 			this.origin = params.origin;
-			this.event = params.event;
+			this.type = params.type;
 			this.data = params.data;
 			this.invalidate = params.invalidate;
 			this.settings = params.settings;
@@ -684,7 +684,7 @@
 		 * @return {SandboxListener[]}
 		 */
 		CachedEvent.prototype.filterEventListeners = function filterEventListeners(listeners) {
-			return _.filter(listeners, {event: this.event});
+			return _.filter(listeners, {event: this.type});
 		};
 		/**
 		 * tries to invalidate event expiration

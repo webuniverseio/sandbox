@@ -255,7 +255,7 @@
 					bar.on(eventName, listener);
 					expect(listener.calls.count()).toBe(1);
 					var mostRecentCall = listener.calls.mostRecent();
-					expect(mostRecentCall.args[0].event).toBe(eventName);
+					expect(mostRecentCall.args[0].type).toBe(eventName);
 					expect(mostRecentCall.args[1]).toBe(data[0]);
 					expect(mostRecentCall.args[2]).toBe(data[1]);
 				}, 1200);
