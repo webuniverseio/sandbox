@@ -1,5 +1,5 @@
 {
-  "name": "sandbox",
+  "name": "app-sandbox",
   "version": "1.0.1",
   "description": "Sandbox for scalable javascript applications",
   "main": "lib/sandbox.js",
