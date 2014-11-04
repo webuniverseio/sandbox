@@ -342,3 +342,5 @@ sandbox.emit('new-search-popup-links', [{
 }]);
 //...
 ```
+
+Check tests and source for more
