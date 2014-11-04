@@ -1,7 +1,7 @@
 {
   "name": "app-sandbox",
-  "version": "1.0.1",
-  "description": "Sandbox for scalable javascript applications",
+  "version": "1.0.2",
+  "description": "Sandbox for scalable javascript applications. Support for event-driven architecture. ~100% test covered.",
   "main": "lib/sandbox.js",
   "directories": {
     "test": "test"
