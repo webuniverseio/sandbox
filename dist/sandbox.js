@@ -1,7 +1,7 @@
-/*! sandbox - v1.0.1 - 2014-10-31
+/*! app-sandbox - v1.0.3 - 2014-11-04
 * https://github.com/szarouski/sandbox
  Licensed http://unlicense.org/
-* Description Sandbox for scalable javascript applications
+* Description Sandbox for scalable javascript applications. Support for event-driven architecture. ~100% test covered.
 * Author Sergey Zarouski, http://webuniverse.club
 */
 
@@ -16,8 +16,9 @@
 	if (typeof define === 'function' && define.amd) {
 		define(['exports', '_', 'simple-permissions'], factory);
 	} else if (typeof exports === 'object') {
-		//noinspection JSCheckFunctionSignatures
-		factory(exports, require(isNode ? 'lodash-node' : '_'), require('simple-permissions'));
+		//noinspection JSCqheckFunctionSignatures
+		var lodashModuleName = isNode ? 'lodash-node' : '_';
+		factory((isNode ? exports : exports.sandbox = {}), require(lodashModuleName), require('simple-permissions'));
 	} else {
 		var rootExports = root.exports || (root.exports = {});
 		//noinspection JSUnresolvedVariable

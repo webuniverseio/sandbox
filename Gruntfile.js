@@ -21,8 +21,8 @@ module.exports = function initGrunt(grunt) {
 				stripBanners: true
 			},
 			dist: {
-				src: ['lib/<%= pkg.name %>.js'],
-				dest: 'dist/<%= pkg.name %>.js'
+				src: ['lib/sandbox.js'],
+				dest: 'dist/sandbox.js'
 			}
 		},
 		uglify: {
@@ -34,7 +34,7 @@ module.exports = function initGrunt(grunt) {
 			},
 			dist: {
 				src: '<%= concat.dist.dest %>',
-				dest: 'dist/<%= pkg.name %>.min.js'
+				dest: 'dist/sandbox.min.js'
 			}
 		},
 		jshint: {
