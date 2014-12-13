@@ -1,7 +1,7 @@
 {
   "name": "Sandbox",
   "description": "Sandbox with hierarchical support of event management",
-  "license": "http://unlicense.org/",
+  "license": "Unlicense",
   "ignore": [
     ".idea"
   ],
@@ -12,7 +12,7 @@
   "authors": [
     {
       "name": "Sergey Zarouski",
-      "homepage": "http://webuniverse.club"
+      "homepage": "http://webuniverse.io"
     }
   ],
   "homepage": "https://github.com/szarouski/sandbox",

@@ -1,6 +1,6 @@
 {
   "name": "app-sandbox",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Sandbox for scalable javascript applications. Support for event-driven architecture. ~100% test covered.",
   "main": "lib/sandbox.js",
   "directories": {
@@ -16,9 +16,9 @@
   },
   "author": {
     "name": "Sergey Zarouski",
-    "homepage": "http://webuniverse.club"
+    "homepage": "http://webuniverse.io"
   },
-  "license": "http://unlicense.org/",
+  "license": "Unlicense",
   "bugs": {
     "url": "https://github.com/szarouski/sandbox/issues"
   },

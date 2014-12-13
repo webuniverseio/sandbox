@@ -1,8 +1,8 @@
-/*! app-sandbox - v1.0.3 - 2014-11-04
+/*! app-sandbox - v1.0.4 - 2014-12-13
 * https://github.com/szarouski/sandbox
- Licensed http://unlicense.org/
+ Licensed Unlicense
 * Description Sandbox for scalable javascript applications. Support for event-driven architecture. ~100% test covered.
-* Author Sergey Zarouski, http://webuniverse.club
+* Author Sergey Zarouski, http://webuniverse.io
 */
 
 //TODO: look at closure compiler minifier
