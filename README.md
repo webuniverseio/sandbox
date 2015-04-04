@@ -1,4 +1,6 @@
 # Sandbox
+
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/szarouski/sandbox?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  
 Sandbox implementation with permission management for modular architecture
 - Crossbrowser (IE8+)/Crossplatform
 - tested with ~100% coverage
