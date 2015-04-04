@@ -63,6 +63,12 @@ module.exports = function initGrunt(grunt) {
 				files: '<%= jshint.lib_test.src %>',
 				tasks: ['jshint:lib_test', 'karma:unit']
 			}
+		},
+		githooks: {
+			all: {
+				// Will run the jshint and test:unit tasks at every commit
+				'pre-commit': 'default'
+			}
 		}
 	});
 
@@ -72,8 +78,18 @@ module.exports = function initGrunt(grunt) {
 	grunt.loadNpmTasks('grunt-karma');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-githooks');
 
 	// Default task.
-	grunt.registerTask('default', ['jshint', 'karma', 'concat', 'uglify']);
+	grunt.registerTask('default', ['jshint', 'karma', 'test-node', 'concat', 'uglify']);
 
+	grunt.registerTask('test-node', function () {
+		var shelljs = require('shelljs');
+		shelljs.exec('npm run test-node');
+		/* istanbul ignore if  */
+		if (shelljs.error()) {
+			//noinspection ExceptionCaughtLocallyJS
+			throw new Error('test contains errors');
+		}
+	});
 };

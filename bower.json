@@ -18,7 +18,7 @@
   "homepage": "https://github.com/szarouski/sandbox",
   "private": false,
   "dependencies": {
-    "lodash": "~2.4.1",
-    "simple-permissions": "~3.0.0"
+    "lodash": "^3.5.0",
+    "simple-permissions": "^4.0.0"
   }
 }

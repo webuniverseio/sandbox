@@ -13,7 +13,7 @@
 var environment = typeof window === 'object' ? 'browser' : 'node',
 	projectMainFolder = 'lib/',
 	paths = {
-		'simple-permissions': '../vendor/simple-permissions/lib/simple-permissions'
+		'simple-permissions': '../bower_components/simple-permissions/lib/simple-permissions'
 	},
 	dependencies = [];
 if (environment === 'browser') {
@@ -28,7 +28,7 @@ if (environment === 'browser') {
 	}
 
 
-	paths._ = '../vendor/lodash/dist/lodash.compat';
+	paths._ = '../bower_components/lodash/lodash';
 
 
 	requirejs.config({
@@ -44,7 +44,7 @@ if (environment === 'browser') {
 		callback: window.__karma__.start
 	});
 } else {
-	paths._ = 'lodash-node';
+	paths._ = 'lodash';
 	module.exports = {
 		projectMainFolder: projectMainFolder,
 		paths: paths
