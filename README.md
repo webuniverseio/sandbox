@@ -17,17 +17,22 @@ License
 - http://unlicense.org/
 
 ________
-##Installation:
+
+## Installation:
+
 `bower install simple-permissions`    
 `npm install simple-permissions`
 
-##Tests:
-To launch tests make sure you have `karma-cli` installed globally and run `npm install`.
-For browsers run `npm test` (you might want to adjust karma.conf.js). For node `npm run test-node`.
+## Tests:
 
-If you want to contribute make sure you have `grunt-cli` installed globally and run `grunt`. Please don't include _dist_ folder in your commit.
+To launch tests you have to run `npm install` then `npm test`.
+If you want to contribute make sure to run `grunt githooks` first thing after clone. 
+It will create pre-commit hook and run tests and jshint before you commit. 
+Please use git flow - create a feature branch for your feature and send a pull request to dev. 
+Please don't include _dist_ folder in your commit.
 
-##API:
+## API:
+
 ```js
 /**
  * constructs a sandbox
@@ -346,3 +351,5 @@ sandbox.emit('new-search-popup-links', [{
 ```
 
 Check tests and source for more
+
+[![Analytics](https://ga-beacon.appspot.com/UA-61501696-1/szarouski/sandbox/README)](https://github.com/igrigorik/ga-beacon)

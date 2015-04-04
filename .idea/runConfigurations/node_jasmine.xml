@@ -1,9 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="node jasmine" type="NodeJSConfigurationType" factoryName="Node.js" path-to-node="C:/Program Files/nodejs/node" path-to-js-file="node_modules/jasmine-node/bin/jasmine-node" application-parameters="--match \&quot;test\&quot; test" working-dir="$PROJECT_DIR$/">
-    <RunnerSettings RunnerId="Basic" />
-    <RunnerSettings RunnerId="debuggableProgram" />
-    <ConfigurationWrapper RunnerId="Basic" />
-    <ConfigurationWrapper RunnerId="debuggableProgram" />
-    <method />
-  </configuration>
-</component>
