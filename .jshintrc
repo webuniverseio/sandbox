@@ -16,7 +16,6 @@
 	"maxparams": 4,
 	"node": true,
 	"eqeqeq": true,
-	"strict": true,
 	"undef": true,
 	"sub": true,
 	"expr": true,
