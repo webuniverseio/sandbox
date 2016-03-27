@@ -589,7 +589,7 @@
 				});
 				var anonymous11 = anonymous1.kid('1.1');
 				var anonymous12Name = '1.2';
-				var permissionsMap = _.object([anonymous1.name()], [['ping']]);
+				var permissionsMap = _.zipObject([anonymous1.name()], [['ping']]);
 				anonymous1.grant([anonymous11.name(), anonymous12Name], permissionsMap);
 				var anonymous12 = anonymous1.kid(anonymous12Name);
 
